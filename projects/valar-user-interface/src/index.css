@@ -85,6 +85,16 @@ input:-webkit-autofill {
   background-color: rgba(0, 0, 0, 0) !important;
   -webkit-box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0) inset !important; /* Override autofill default styling */
   transition: background-color 5000s ease-in-out 0s; /* Ensure background color sticks */
-  -webkit-text-fill-color: rgba(255, 255, 255, 1)  !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 1) !important;
   color: rgba(255, 255, 255, 1) !important;
+}
+
+.spinner {
+  transform-origin: center;
+  animation: spinner 1.2s infinite linear;
+}
+@keyframes spinner {
+  100% {
+    transform: rotate(360deg);
+  }
 }

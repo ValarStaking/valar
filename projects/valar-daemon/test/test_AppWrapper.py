@@ -5,10 +5,10 @@ Notes
 The inherited `...AppWrapper` methods are tested through `ValadAppWrapperList` and are skipped for delcos.
 The wrappers should be independent of app state (just the client is connected), so tests don't have to be exhaustive.
 """
-import sys
+# import sys
 import pytest
 import logging
-from pathlib import Path
+# from pathlib import Path
 from typing import Callable
 
 from algokit_utils.beta.algorand_client import AlgorandClient
@@ -36,7 +36,7 @@ from test.utils import (
     translate_delco_state_to_noticeboard_util_class_action
 )
 
-sys.path.insert(0, str(Path(*Path(__file__).parent.parts[:-2], 'valar-smart-contracts')))
+# sys.path.insert(0, str(Path(*Path(__file__).parent.parts[:-2], 'valar-smart-contracts')))
 from tests.noticeboard.utils import Noticeboard
 from tests.noticeboard.config import ActionInputs
 
@@ -458,7 +458,7 @@ def test_valad_app_wrapper_list_remove_multiple_apps(
 @pytest.mark.parametrize(
     "algo_fee_asset, valad_state, delco_state, delben_equal_delman", 
     [
-        (True, VALAD_STATE_READY, DELCO_STATE_READY, False),
+        (True, VALAD_STATE_READY, DELCO_STATE_READY, True),
         # (VALAD_STATE_READY, DELCO_STATE_READY, True),
         # (VALAD_STATE_READY, DELCO_STATE_SUBMITTED, False),
         # (VALAD_STATE_READY, DELCO_STATE_SUBMITTED, True),
@@ -486,8 +486,8 @@ def test_delco_app_wrapper_initialization(
 @pytest.mark.parametrize(
     "algo_fee_asset, valad_state, delben_equal_delman, delco_state, propagate_deleted_error", 
     [
-        (True, VALAD_STATE_READY, False, DELCO_STATE_ENDED_EXPIRED, False),
-        (True, VALAD_STATE_READY, False, DELCO_STATE_ENDED_EXPIRED, True),
+        (True, VALAD_STATE_READY, True, DELCO_STATE_ENDED_EXPIRED, False),
+        (True, VALAD_STATE_READY, True, DELCO_STATE_ENDED_EXPIRED, True),
     ]
 )
 def test_delco_app_deleted_state(
@@ -542,7 +542,7 @@ def test_delco_app_wrapper_list_initialization(
 @pytest.mark.parametrize(
     "algo_fee_asset, valad_state, delco_state, delben_equal_delman", 
     [
-        (True, VALAD_STATE_READY, DELCO_STATE_READY, False),
+        (True, VALAD_STATE_READY, DELCO_STATE_READY, True),
         # (VALAD_STATE_READY, DELCO_STATE_READY, True),
         # (VALAD_STATE_READY, DELCO_STATE_SUBMITTED, False),
         # (VALAD_STATE_READY, DELCO_STATE_SUBMITTED, True),
@@ -570,3 +570,61 @@ def test_delco_app_wrapper_list_add_single_app(
     delco_app_wrapper_list.add_single_app(delco_id)
     assert len(delco_app_wrapper_list.get_app_list()) == 1
     assert delco_app_wrapper_list.get_id_list() == [delco_id]
+
+
+@pytest.mark.parametrize(
+    "algo_fee_asset, valad_state, delco_state, delben_equal_delman", 
+    [
+        (True, VALAD_STATE_READY, DELCO_STATE_READY, True)
+    ]
+    )
+def test_delco_app_wrapper_get_partkey_params(
+        algorand_client: AlgorandClient,
+        delco_id: int
+    ):
+    """Test fetching partkey parameters from delco wrapper.
+
+    Parameters
+    ----------
+    algorand_client : AlgorandClient
+    delco_id : int
+    """
+    app_wrapper = DelcoAppWrapper(algorand_client, delco_id)
+    params = app_wrapper.get_partkey_params()
+    assert app_wrapper.delben_address == params['address']
+    assert app_wrapper.round_start == params['vote-first-valid']
+    assert app_wrapper.round_end == params['vote-last-valid']
+
+
+@pytest.mark.parametrize(
+    "algo_fee_asset, valad_state, delco_state, delben_equal_delman", 
+    [
+        (True, VALAD_STATE_READY, DELCO_STATE_READY, True)
+    ]
+    )
+def test_delco_app_wrapper_list_get_partkey_params(
+        algorand_client: AlgorandClient,
+        logger_mockup: logging.Logger,
+        delco_id: int
+    ):
+    """Test fetching partkey parameters from delco wrapper list.
+
+    Parameters
+    ----------
+    algorand_client : AlgorandClient
+    logger_mockup : logging.Logger
+    delco_id : int
+    """
+    # Populate list
+    delco_app_wrapper_list = DelcoAppWrapperList(
+        algorand_client=algorand_client, 
+        logger=logger_mockup
+    )
+    # Get app and params from app list (see if it exposes the params)
+    delco_app_wrapper_list.add_single_app(delco_id)
+    app_wrapper = delco_app_wrapper_list.get_app_list()[0]
+    params = delco_app_wrapper_list.get_partkey_params_list()[0]
+    # Evaluate correctness
+    assert app_wrapper.delben_address == params['address']
+    assert app_wrapper.round_start == params['vote-first-valid']
+    assert app_wrapper.round_end == params['vote-last-valid']

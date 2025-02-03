@@ -21,7 +21,6 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // TO DO: Check if this is ok
   server: {
     proxy: {
       "/api": {
@@ -31,4 +30,7 @@ export default defineConfig({
       },
     },
   },
+  define: {
+    global: 'window'
+  }
 });

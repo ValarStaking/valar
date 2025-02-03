@@ -29,18 +29,18 @@ function capitalizeFirstLetter(val: string): string {
 
 const gls = (entry: string) => {
   return (
-    <LinkExt 
+    <LinkExt
       href={"/glossary#" + entry.replace(/\s+/g, '-').toLowerCase()}
-      text={entry}
+      children={entry}
       className={faqLinkStyle}/>
   );
 };
 
 const Gls = (entry: string) => {
   return (
-    <LinkExt 
+    <LinkExt
       href={"/glossary#" + entry.replace(/\s+/g, '-').toLowerCase()}
-      text={capitalizeFirstLetter(entry)}
+      children={capitalizeFirstLetter(entry)}
       className={faqLinkStyle}/>
   );
 };
@@ -55,18 +55,18 @@ const glspl = (entry: string) => {
   }
 
   return (
-    <LinkExt 
+    <LinkExt
       href={"/glossary#" + entry.replace(/\s+/g, '-').toLowerCase()}
-      text={entry}
+      children={entry}
       className={faqLinkStyle}/>
   );
 };
 
 const glsposs = (entry: string) => {
   return (
-    <LinkExt 
+    <LinkExt
       href={"/glossary#" + entry.replace(/\s+/g, '-').toLowerCase()}
-      text={entry + "'s"}
+      children={entry + "'s"}
       className={faqLinkStyle}/>
   );
 };
@@ -113,21 +113,21 @@ const StakingFAQs: FAQ[] = [
         <ul className="ml-5 list-disc">
           <li>
             Efficient, accessible, and borderless financial rails with instant settlement
-            (<LinkExt href="https://quantozpay.com/" text="Quantoz" className={faqLinkStyle}/> with is EURD and {" "}
-            <LinkExt href="https://hesab.com/en/" text="HesabPay" className={faqLinkStyle}/>)
+            (<LinkExt href="https://quantozpay.com/" children="Quantoz" className={faqLinkStyle}/> with is EURD and {" "}
+            <LinkExt href="https://hesab.com/en/" children="HesabPay" className={faqLinkStyle}/>)
           </li>
           <li>
           Unlocking capital and accessible investment options with tokenization of real-world assets for example in real estate
-          (<LinkExt href="https://www.lofty.ai/" text="LoftyAI" className={faqLinkStyle}/> and  {" "}
-          <LinkExt href="http://vestaequity.net/" text="Vesta Equity" className={faqLinkStyle}/>) 
-          and agrobusiness (<LinkExt href="https://www.agrotoken.com/en/home" text="Agrotoken" className={faqLinkStyle}/>).
+          (<LinkExt href="https://www.lofty.ai/" children="LoftyAI" className={faqLinkStyle}/> and  {" "}
+          <LinkExt href="http://vestaequity.net/" children="Vesta Equity" className={faqLinkStyle}/>)
+          and agrobusiness (<LinkExt href="https://www.agrotoken.com/en/home" children="Agrotoken" className={faqLinkStyle}/>).
           </li>
           <li>
-            Verifiable provenance of goods for supply chains (<LinkExt href="https://wholechain.com/" text="Wholechain" className={faqLinkStyle}/>) and  {" "}
-            of research data (<LinkExt href="https://labtrace.io/" text="Labtrace" className={faqLinkStyle}/>).
+            Verifiable provenance of goods for supply chains (<LinkExt href="https://wholechain.com/" children="Wholechain" className={faqLinkStyle}/>) and  {" "}
+            of research data (<LinkExt href="https://labtrace.io/" children="Labtrace" className={faqLinkStyle}/>).
           </li>
           <li>
-            People taking true ownership of all their assets - even plane tickets (<LinkExt href="https://travelx.io/" text="TravelX" className={faqLinkStyle}/>).
+            People taking true ownership of all their assets - even plane tickets (<LinkExt href="https://travelx.io/" children="TravelX" className={faqLinkStyle}/>).
         </li>
         </ul>
       </div>
@@ -403,7 +403,7 @@ const DelegatorFAQs: FAQ[] = [
     ques: "Can I monitor how well is the service being performed?",
     ans: (
       <span>
-        By using off&#8209;chain performance monitoring services like <LinkExt href="https://alerts.allo.info/" text="https://alerts.allo.info/" className={faqLinkStyle}/> it is possible to see how the node is performing.
+        By using off&#8209;chain performance monitoring services like <LinkExt href="https://alerts.allo.info/" children="https://alerts.allo.info/" className={faqLinkStyle}/> it is possible to see how the node is performing.
         If such monitoring services notice possible underperformance, you can withdraw from the contract.
 
       </span>
@@ -500,7 +500,7 @@ const DelegatorFAQs: FAQ[] = [
         The notification message is sent in the note field of a zero-payment transaction issued by the Valar Platform smart contracts.
         All messages begin with "Message from Valar:" and are sent by the main Valar Platform smart contract.
         Possible messages are:
-        
+
         Yes! Your ALGO is completely unlocked and in your sole custody at all times. You can spend it or get more ALGO.
         Your stake will be automatically updated by the {gls("Algorand")} network.
         It is important to note that that
@@ -655,8 +655,12 @@ const ValidatorFAQs: FAQ[] = [
     ques: "How can I become a node runner?",
     ans: (
       <span>
-        See our detailed guide on how to become a node runner and offer your node running services via Valar.
-
+        See our <LinkExt
+          href={"/learn-node"}
+          children={"guide"}
+          className={"text-secondary"}
+        /> {" "}
+        on how to become a node runner and offer your node running services via Valar.
       </span>
     ),
   },
@@ -816,7 +820,7 @@ const ValidatorFAQs: FAQ[] = [
       <span>
         The Valar Daemon is initialized according to a configuration file when it is run. The configuration file requires you to enter the mnemonic of the Validator Manager (the {gls("hot wallet")}) and the IDs of the validator ads that the Valar Daemon should service.
         Additionally, you can configure the Valar Daemon to run on an alternative network for testing purposes, adjust the level of information it provides during execution, and change the period at which it checks and manages service contracts.
-        Click <LinkExt href="/learn-node" text="here" className={faqLinkStyle}/> for more information on downloading, setting up, and running the Valar Daemon. 
+        Click <LinkExt href="/learn-node" children="here" className={faqLinkStyle}/> for more information on downloading, setting up, and running the Valar Daemon.
       </span>
     ),
   },
@@ -861,7 +865,7 @@ const ValidatorFAQs: FAQ[] = [
     ),
   },
 ];
-  
+
 
 const AlgorandFAQs: FAQ[] = [
   {

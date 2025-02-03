@@ -1,22 +1,11 @@
 import { cn } from "@/lib/shadcn-utils";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { ReactNode } from "react";
 import { UseFormReturn } from "react-hook-form";
 
-import { Button } from "../ui/button";
-import { Calendar } from "../ui/calendar";
 import { FormControl, FormField, FormItem, FormMessage } from "../ui/form";
 import { Input, InputUnit } from "../ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Switch } from "../ui/switch";
-import { ReactNode } from "react";
 
 export const FormInput = ({
   form,
@@ -109,12 +98,14 @@ export const FormSelect = ({
   name,
   options,
   placeholder,
+  onValueChangeEffect,
   ...rest
 }: {
   className?: string;
   form: UseFormReturn<any>;
   name: string;
   placeholder: string;
+  onValueChangeEffect?: (value: string) => void;
   options: { value: string; display: string }[];
 } & Omit<React.ComponentProps<"select">, "form">) => {
   return (
@@ -124,13 +115,16 @@ export const FormSelect = ({
       render={({ field }) => (
         <FormItem>
           <Select
-            onValueChange={field.onChange}
+            onValueChange={(value) => {
+              onValueChangeEffect?.(value);
+              field.onChange(value);
+            }}
             value={field.value}
             disabled={rest.disabled || field.disabled}
           >
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder={placeholder} /> 
+                <SelectValue placeholder={placeholder} />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
@@ -167,13 +161,7 @@ export const FormDate = ({
         <FormItem className={cn("", className)}>
           <div className={cn("")}>
             <FormControl>
-              <Input
-                className="appearance-none"
-                type="date"
-                disabled={disabled}
-                {...rest}
-                {...field}
-              />
+              <Input className="appearance-none" type="date" disabled={disabled} {...rest} {...field} />
             </FormControl>
             <FormMessage />
           </div>

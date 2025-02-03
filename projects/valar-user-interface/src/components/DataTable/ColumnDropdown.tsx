@@ -10,13 +10,7 @@ import { cn } from "@/lib/shadcn-utils";
 import { Table as ReactTable } from "@tanstack/table-core";
 import { ChevronDown } from "lucide-react";
 
-const ColumnDropdown = ({
-  className,
-  table,
-}: {
-  className?: string;
-  table: ReactTable<any>;
-}) => {
+const ColumnDropdown = ({ className, table }: { className?: string; table: ReactTable<any> }) => {
   return (
     <div className={cn("", className)}>
       <DropdownMenu>
@@ -25,13 +19,8 @@ const ColumnDropdown = ({
             Columns <ChevronDown />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="border-0 bg-background text-white"
-        >
-          <DropdownMenuLabel className="border-b border-border">
-            Columns
-          </DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="border-0 bg-background text-white">
+          <DropdownMenuLabel className="border-b border-border">Columns</DropdownMenuLabel>
           {table
             .getAllColumns()
             .filter((column) => column.getCanHide())
@@ -42,6 +31,7 @@ const ColumnDropdown = ({
                   className="capitalize"
                   checked={column.getIsVisible()}
                   onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                  onSelect={(e) => e.preventDefault()}
                 >
                   {column.columnDef.header?.toString()}
                 </DropdownMenuCheckboxItem>

@@ -24,7 +24,7 @@ const NodeRunnerSection = () => {
         <ChartColumnIncreasing className="h-8 w-8 text-tertiary" />
       ),
       head: "Predictable",
-      desc: "Charge in ALGO or stable-coins. Customize your price per stake and duration.",
+      desc: "Charge in ALGO or stablecoins. Customize your price per stake and duration.",
     },
     {
       icon: <Handshake className="h-8 w-8 text-tertiary" />,

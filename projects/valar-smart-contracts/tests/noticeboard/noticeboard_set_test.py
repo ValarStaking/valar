@@ -62,6 +62,7 @@ def test_action(
 
     # Prepare settings for the noticeboard
     action_inputs.pla_manager = noticeboard.pla_manager.address
+    action_inputs.asset_config_manager = noticeboard.asset_config_manager.address
     action_inputs.tc_sha256 = bytes([0xDD] * 32)
     action_inputs.noticeboard_fees = NoticeboardFees(
         commission_min = 661_087,
@@ -94,6 +95,7 @@ def test_action(
     gs_exp = gs_start
     gs_exp.state = STATE_SET
     gs_exp.pla_manager = action_inputs.pla_manager
+    gs_exp.asset_config_manager = action_inputs.asset_config_manager
     gs_exp.tc_sha256 = action_inputs.tc_sha256
     gs_exp.noticeboard_fees = action_inputs.noticeboard_fees
     gs_exp.noticeboard_terms_timing = action_inputs.noticeboard_terms_timing

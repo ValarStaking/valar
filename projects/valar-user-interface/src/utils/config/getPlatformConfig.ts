@@ -1,5 +1,6 @@
 import configLocalnet from '../../constants/platform.localnet.json'
 import configFnet from '../../constants/platform.fnet.json'
+import configMainnet from '../../constants/platform.mainnet.json'
 
 // Select platform configuration depending on the network
 export function getPlatformConfig() {
@@ -17,6 +18,9 @@ export function getPlatformConfig() {
     case "fnet":
         config = configFnet;
         break;
+    case "mainnet":
+      config = configMainnet;
+      break;
     default:
       throw("Unexpected network.");
       break;

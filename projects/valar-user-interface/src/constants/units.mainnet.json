@@ -1,0 +1,48 @@
+{
+  "TimeParams": {
+    "setup": {
+      "unit": "min",
+      "decimals": 0
+    },
+    "confirmation": {
+      "unit": "h",
+      "decimals": 0
+    },
+    "stake": {
+      "unit": "days",
+      "decimals": 0
+    },
+    "warn": {
+      "unit": "h",
+      "decimals": 0
+    }
+  },
+  "ALGORAND_DEPOSIT_DECIMALS": 2,
+  "AssetParams": {
+    "setup": {
+      "unit": "",
+      "decimals": 2
+    },
+    "total": {
+      "unit": "",
+      "decimals": 2
+    },
+    "opMonth": {
+      "unit": "per month",
+      "decimals": 2
+    },
+    "opDuration": {
+      "unit": "",
+      "decimals": 2
+    },
+    "opMin": {
+      "unit": "per month",
+      "decimals": 2
+    },
+    "opVar": {
+      "unit": "per month & per 100k ALGO",
+      "decimals": 2
+    }
+  },
+  "APY_DECIMALS": 2
+}

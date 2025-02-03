@@ -1,6 +1,6 @@
-import slide1 from "@/assets/partners/slide1.png";
-import slide2 from "@/assets/partners/slide2.png";
-import slide3 from "@/assets/partners/slide3.png";
+import slide1 from "@/assets/partners/slide1.jpg";
+import slide2 from "@/assets/partners/slide2.jpg";
+import slide3 from "@/assets/partners/slide3.jpg";
 import { Wallet } from "@/components/Wallet/Wallet";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +20,7 @@ const partners = [
   {
     bg: slide1,
     head: "With peer-to-peer staking you enable",
-    desc: "Efficient, accessible, and borderless financial rails with instant settlement.",
+    desc: "People taking true ownership of all their assets - even plane tickets.",
   },
   {
     bg: slide2,
@@ -30,7 +30,7 @@ const partners = [
   {
     bg: slide3,
     head: "With peer-to-peer staking you enable",
-    desc: "People taking true ownership of all their assets-even plane tickets.",
+    desc: "Efficient, accessible, and borderless financial rails with instant settlement.",
   },
 ];
 

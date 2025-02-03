@@ -2,13 +2,18 @@ import { UserInfo } from '@/interfaces/contracts/User';
 import { KeyRegParams } from '@/lib/types';
 import { create } from 'zustand';
 
-export interface User {
+export interface AccountInfo {
   address: string;
   algo: bigint;
   assets: Map<bigint, bigint>;
   keyRegParams: KeyRegParams | undefined;
-  trackedPerformance: boolean; 
+  trackedPerformance: boolean;
+}
+
+export interface User extends AccountInfo {
   userInfo: UserInfo | undefined;
+  beneficiary: AccountInfo;
+  galgo: AccountInfo | null;
 }
 
 export interface UserStore {

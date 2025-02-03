@@ -43,6 +43,7 @@ from smart_contracts.helpers.constants import (
     ERROR_APP_NOT_WITH_USER,
     ERROR_ASSET_NOT_ALLOWED,
     ERROR_CALLED_BY_NOT_PLA_MANAGER,
+    ERROR_CALLED_BY_NOT_PLA_MANAGER_OR_ASSET_CONFIG_MANAGER,
     ERROR_CALLED_BY_NOT_PLA_MANAGER_OR_CREATOR,
     ERROR_CALLED_FROM_STATE_RETIRED,
     ERROR_COMMISSION_MAX,
@@ -124,6 +125,8 @@ class Noticeboard(ARC4Contract, avm_version=11):
 
     pla_manager : Account
         Platform manager account.
+    asset_config_manager : Account
+        Manager account that can configure assets supported by the noticeboard.
 
     tc_sha256 : Sha256
         Hash (i.e. SHA 256) of the Terms and Conditions.
@@ -202,6 +205,7 @@ class Noticeboard(ARC4Contract, avm_version=11):
 
     noticeboard_set(
         pla_manager: Account,
+        asset_config_manager: Account,
         tc_sha256 : Sha256,
         noticeboard_fees : NoticeboardFees,
         noticeboard_terms_timing : NoticeboardTermsTiming,
@@ -484,6 +488,7 @@ class Noticeboard(ARC4Contract, avm_version=11):
         """
 
         self.pla_manager = Global.zero_address
+        self.asset_config_manager = Global.zero_address
 
         self.tc_sha256 = Sha256.from_bytes(op.bzero(32))
 
@@ -537,6 +542,7 @@ class Noticeboard(ARC4Contract, avm_version=11):
         self.app_id_old = app_id_old
 
         self.pla_manager = Global.creator_address
+        self.asset_config_manager = Global.creator_address
 
         # Change state to DEPLOYED
         self.state = Bytes(STATE_DEPLOYED)
@@ -597,6 +603,7 @@ class Noticeboard(ARC4Contract, avm_version=11):
     def noticeboard_set(
         self,
         pla_manager: Account,
+        asset_config_manager: Account,
         tc_sha256 : Sha256,
         noticeboard_fees : NoticeboardFees,
         noticeboard_terms_timing : NoticeboardTermsTiming,
@@ -609,6 +616,8 @@ class Noticeboard(ARC4Contract, avm_version=11):
         ----------
         pla_manager : Account
             Platform manager account.
+        asset_config_manager : Account
+            Manager account that can configure assets supported by the noticeboard.
         tc_sha256 : Sha256
             Hash (i.e. SHA 256) of the Terms and Conditions.
         noticeboard_fees : NoticeboardFees
@@ -626,6 +635,7 @@ class Noticeboard(ARC4Contract, avm_version=11):
         ), ERROR_CALLED_BY_NOT_PLA_MANAGER_OR_CREATOR
 
         self.pla_manager = pla_manager
+        self.asset_config_manager = asset_config_manager
         self.tc_sha256 = tc_sha256.copy()
 
         # Sanity check on commission to prevent calculation errors
@@ -697,7 +707,10 @@ class Noticeboard(ARC4Contract, avm_version=11):
             Payment transaction to cover MBR increase.
         """
 
-        assert Txn.sender == self.pla_manager, ERROR_CALLED_BY_NOT_PLA_MANAGER
+        assert (
+            Txn.sender == self.pla_manager or
+            Txn.sender == self.asset_config_manager
+        ), ERROR_CALLED_BY_NOT_PLA_MANAGER_OR_ASSET_CONFIG_MANAGER
 
         # Check if payment for covering the MBR increase was made to this contract
         assert txn.receiver == Global.current_application_address, ERROR_RECEIVER
@@ -733,7 +746,10 @@ class Noticeboard(ARC4Contract, avm_version=11):
             Payment transaction to cover (potential) MBR increase.
         """
 
-        assert Txn.sender == self.pla_manager, ERROR_CALLED_BY_NOT_PLA_MANAGER
+        assert (
+            Txn.sender == self.pla_manager or
+            Txn.sender == self.asset_config_manager
+        ), ERROR_CALLED_BY_NOT_PLA_MANAGER_OR_ASSET_CONFIG_MANAGER
         assert self.state != Bytes(STATE_RETIRED), ERROR_CALLED_FROM_STATE_RETIRED
 
         mbr_cur = Global.current_application_address.min_balance

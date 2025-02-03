@@ -2,7 +2,7 @@ import IdenticonAvatar from "@/components/Identicon/Identicon";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/shadcn-utils";
 import { Cell, flexRender, Row, Table } from "@tanstack/react-table";
-import { ValDelCoListItem } from "./utils";
+import { ValDelCoListItem } from "./valDelCoList.utils";
 import { ellipseAddress } from "@/utils/convert";
 
 type KeyType = keyof ValDelCoListItem | "details";

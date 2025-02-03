@@ -1,6 +1,12 @@
 {
   "noticeboardAppID": "number - App ID of noticeboard",
   "tc": "string - SHA256 of Terms and Conditions, written as hex, in lower case",
+  "algoRewards": {
+    "startRound": "number - round at which rewards start",
+    "startReward": "number - start reward per block [microALGO]",
+    "decayRounds": "number - decay window [rounds]",
+    "decayRate": "number - decay percentage per decayRounds [%]"
+  },
 	"currencies": {
 	  "string - ASA ID or 0 for 1st supported payment asset": {
 	    "allowed": "boolean - whether asset is currently allowed at the platform or not",
@@ -29,7 +35,8 @@
     "maxStake": {
       "min": "number - minimal maximum stake [ALGO]",
       "max": "number - maximum maximum stake [ALGO]"
-    }
+    },
+    "maxUsers": "number - maximum number of users per ad, i.e. node"
   },
 	"suggestions": {
 		"delCo": {

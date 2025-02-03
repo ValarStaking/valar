@@ -12,12 +12,16 @@ from algokit_utils.network_clients import (
     get_indexer_client,
     get_kmd_client,
 )
+from algosdk.constants import ZERO_ADDRESS
+from algosdk.transaction import PaymentTxn
 from algosdk.v2client.algod import AlgodClient
 from algosdk.v2client.indexer import IndexerClient
 
 from smart_contracts.noticeboard.deployment.platform_params import (
     ACCEPTED_ASSET_ID,
+    ACCEPTED_ASSET_ID_2,
     ACCEPTED_ASSET_INFO,
+    ACCEPTED_ASSET_INFO_2,
     NB_STATE,
     NOTICEBOARD_FEES,
     NOTICEBOARD_TERMS_NODE,
@@ -93,20 +97,26 @@ def deploy(
 
         # Create all needed basic accounts
         accounts: list[AddressAndSigner] = []
-        for _ in range(7):
+        for _ in range(8):
             acc = create_and_fund_account(algorand_client, dispenser, [asset], algo_amount=TestConsts.acc_dispenser_amt, asa_amount=TestConsts.acc_dispenser_asa_amt)  # noqa: E501
             accounts.append(acc)
 
-        creator, pla_manager, del_manager, del_beneficiary, val_manager, val_owner, partner = accounts
+        creator, pla_manager, asset_config_manager, del_manager, del_beneficiary, val_manager, val_owner, partner = accounts  # noqa: E501
+        pla_manager_address = None
 
     elif deployment_option == "production":
         asset = ACCEPTED_ASSET_ID
         if asset is None:
             raise ValueError("Specify a payment asset to use at the platform.")
 
+        pla_manager_address = os.getenv("PLATFORM_MANAGER_ADDRESS")
+        if pla_manager_address == ZERO_ADDRESS:
+            raise ValueError("Specify a platform manager address.")
+
         dispenser = deployer
         creator = deployer
         pla_manager = deployer
+        asset_config_manager = deployer
         del_manager = deployer
         del_beneficiary = deployer
         val_manager = deployer
@@ -123,6 +133,7 @@ def deploy(
         noticeboard_terms_timing = NOTICEBOARD_TERMS_TIMING,
         noticeboard_terms_node = NOTICEBOARD_TERMS_NODE,
         asset_info = ACCEPTED_ASSET_INFO,
+        pla_manager = pla_manager_address,
         # For testing purposes:
         terms_time = VALIDATOR_TERMS_TIME,
         terms_price = VALIDATOR_TERMS_PRICE,
@@ -153,6 +164,7 @@ def deploy(
         creator=creator,
         dispenser=dispenser,
         pla_manager=pla_manager,
+        asset_config_manager=asset_config_manager,
         del_managers=[del_manager],
         del_beneficiaries=[del_beneficiary],
         val_managers=[val_manager],
@@ -170,6 +182,35 @@ def deploy(
 
     nb_app_id = noticeboard.noticeboard_client.app_id
     print(f"Created and set noticeboard with app ID: {nb_app_id}\n")
+
+    if ACCEPTED_ASSET_ID_2 is not None and ACCEPTED_ASSET_INFO_2 is not None :
+        print("Adding second payment asset...\n")
+        noticeboard.initialize_state(
+            target_state=NB_STATE,
+            action_inputs=action_inputs,
+        )
+        action_inputs.asset_info = ACCEPTED_ASSET_INFO_2
+        action_inputs.asset = ACCEPTED_ASSET_ID_2
+        noticeboard.noticeboard_action(action_name="noticeboard_optin_asa", action_inputs=action_inputs)
+        noticeboard.noticeboard_action(action_name="noticeboard_config_asset", action_inputs=action_inputs)
+
+        print(f"Added support for asset with ID: {action_inputs.asset}\n")
+
+    # Rekey creator to platform owner
+    owner_address = os.getenv("OWNER_ADDRESS")
+    if owner_address != ZERO_ADDRESS:
+        print(f"Rekeying creator to: {owner_address} ...\n")
+        sp = algod_client.suggested_params()
+        unsigned_txn = PaymentTxn(
+            sender=creator.address,
+            sp=sp,
+            receiver=creator.address,
+            amt=0,
+            rekey_to=owner_address,
+        )
+        signed_txn = unsigned_txn.sign(creator.signer.private_key)
+        algod_client.send_transaction(signed_txn)
+        print(f"Rekeyed creator to owner: {owner_address}\n")
 
     # Setup test validators and delegators
     if os.getenv("DEPLOYMENT") == "test":

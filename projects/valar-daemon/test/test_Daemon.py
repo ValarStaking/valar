@@ -3,7 +3,7 @@
 Notes
 -----
 The tests hare heavily based on the implementations in `Daemon`, such as the usage of `PartkeyManager`.
-These tests are akin to 'integrational' tests.
+These tests are akin to integration tests.
 
 Warning
 -------
@@ -66,8 +66,8 @@ from test.utils import (
     wait_for_rounds_until_not_submitted
 )
 
-import sys
-sys.path.insert(0, str(Path(*Path(__file__).parent.parts[:-2], 'valar-smart-contracts')))
+# import sys
+# sys.path.insert(0, str(Path(*Path(__file__).parent.parts[:-2], 'valar-smart-contracts')))
 from tests.noticeboard.utils import Noticeboard # type: ignore
 from tests.noticeboard.config import ActionInputs # type: ignore
 
@@ -88,7 +88,7 @@ def wait_for_partkey_generation(
     partkey_manager : PartkeyManager
         Participation key manager.
     address : str
-        Address which will participat in consensus.
+        Address which will participant in consensus.
     vote_first_valid : int
         First round when keys are valid.
     vote_last_valid : int
@@ -314,7 +314,7 @@ def valad_and_delco_app_wrapper_and_valman(
                 amount=int(delben_balance_algo - stake_max - 10**6 + txn_fee)
             )
 
-    # Send gatind ASAs to / from the delegator beneficiary
+    # Send gating ASAs to / from the delegator beneficiary
     # Get gating ASA minimum limit
     gating_asa_list = DelegatorContractGlobalState.from_global_state(
         delco_app_wrapper.delco_client.get_global_state()
@@ -553,7 +553,7 @@ class TestDelcoReadyStateHandler():
         algorand_client : AlgorandClient
             [fixture] Algorand client.
         valad_and_delco_app_wrapper_and_valman : Callable[ ..., Tuple[...] ]
-            [fixture] Funciton to make a validator ad and delegator contract in the desired state.
+            [fixture] Function to make a validator ad and delegator contract in the desired state.
         partkey_manager : PartkeyManager
             [fixture] Participation key manager.
         logger_mockup : logging.Logger
@@ -563,7 +563,7 @@ class TestDelcoReadyStateHandler():
         expected_delco_state : bytes
             [param] The expected state of the delegator contract.
         expected_response : int
-            [param] The expected resonse from the Daemon's handler.
+            [param] The expected response from the Daemon's handler.
         """
         _, delco_app_wrapper, valad_manager = valad_and_delco_app_wrapper_and_valman
         delco_state = lambda: delco_app_wrapper.delco_client.get_global_state().state.as_bytes
@@ -631,7 +631,7 @@ class TestDelcoReadyStateHandler():
         algorand_client : AlgorandClient
             [fixture] Algorand client.
         valad_and_delco_app_wrapper_and_valman : Callable[ ..., Tuple[...] ]
-            [fixture] Funciton to make a validator ad and delegator contract in the desired state.
+            [fixture] Function to make a validator ad and delegator contract in the desired state.
         partkey_manager : PartkeyManager
             [fixture] Participation key manager.
         logger_mockup : logging.Logger
@@ -641,7 +641,7 @@ class TestDelcoReadyStateHandler():
         expected_delco_state : bytes
             [param] The expected state of the delegator contract.
         expected_response : int
-            [param] The expected resonse from the Daemon's handler.
+            [param] The expected response from the Daemon's handler.
         """
         _, delco_app, valad_manager = valad_and_delco_app_wrapper_and_valman
         # Add keys to buffer -> will say that the keys are pending
@@ -761,7 +761,7 @@ class TestDelcoReadyStateHandler():
         algorand_client : AlgorandClient
             [fixture] Algorand client.
         valad_and_delco_app_wrapper_and_valman : Callable[ ..., Tuple[...] ]
-            [fixture] Funciton to make a validator ad and delegator contract in the desired state.
+            [fixture] Function to make a validator ad and delegator contract in the desired state.
         partkey_manager : PartkeyManager
             [fixture] Participation key manager.
         logger_mockup : logging.Logger
@@ -771,7 +771,7 @@ class TestDelcoReadyStateHandler():
         expected_delco_state : bytes
             [param] The expected state of the delegator contract.
         expected_response : int
-            [param] The expected resonse from the Daemon's handler.
+            [param] The expected response from the Daemon's handler.
         """
         valad_app, delco_app, valad_manager = valad_and_delco_app_wrapper_and_valman
         wait_for_partkey_generation(
@@ -839,14 +839,14 @@ class TestDelcoSubmittedStateHandler():
         logger_mockup: logging.Logger,
         expected_delco_state: bytes
     ):
-        """Test reporting unsubmitted keys.
+        """Test reporting un-submitted keys.
 
         Parameters
         ----------
         algorand_client : AlgorandClient
             [fixture] Algorand client.
         valad_and_delco_app_wrapper_and_valman : Callable[ ..., Tuple[...] ]
-            [fixture] Funciton to make a validator ad and delegator contract in the desired state.
+            [fixture] Function to make a validator ad and delegator contract in the desired state.
         logger_mockup : logging.Logger
             [fixture] Logger.
         expected_delco_state : bytes
@@ -897,7 +897,7 @@ class TestDelcoLiveStateHandler():
                 VALAD_STATE_READY, True, DELCO_STATE_LIVE, 
                 DELCO_STATE_ENDED_LIMITS
             ),
-            ( # Inufficient gating ASA, same delegator manager and beneficiary
+            ( # Insufficient gating ASA, same delegator manager and beneficiary
                 False, False, False, True, 
                 VALAD_STATE_READY, True, DELCO_STATE_LIVE, 
                 DELCO_STATE_ENDED_LIMITS
@@ -923,7 +923,7 @@ class TestDelcoLiveStateHandler():
         action_inputs : ActionInputs
             [fixture] Action inputs.
         valad_and_delco_app_wrapper_and_valman : Callable[ ..., Tuple[...] ]
-            [fixture] Funciton to make a validator ad and delegator contract in the desired state.
+            [fixture] Function to make a validator ad and delegator contract in the desired state.
         logger_mockup : logging.Logger
             [fixture] Logger.
         expected_delco_state : bytes
@@ -982,7 +982,7 @@ class TestDelcoLiveStateHandler():
         algorand_client : AlgorandClient
             [fixture] Algorand client.
         valad_and_delco_app_wrapper_and_valman : Callable[ ..., Tuple[...] ]
-            [fixture] Funciton to make a validator ad and delegator contract in the desired state.
+            [fixture] Function to make a validator ad and delegator contract in the desired state.
         logger_mockup : logging.Logger
             [fixture] Logger.
         expected_delco_state : bytes
@@ -1033,7 +1033,7 @@ class TestDelcoLiveStateHandler():
         algorand_client : AlgorandClient
             [fixture] Algorand client.
         valad_and_delco_app_wrapper_and_valman : Callable[ ..., Tuple[...] ]
-            [fixture] Funciton to make a validator ad and delegator contract in the desired state.
+            [fixture] Function to make a validator ad and delegator contract in the desired state.
         logger_mockup : logging.Logger
             [fixture] Logger.
         expected_delco_state : bytes
@@ -1106,9 +1106,9 @@ class TestDelcoEndedStateHandler():
         action_inputs : ActionInputs
             [fixture] Action inputs.
         valad_and_delco_app_wrapper_and_valman : Callable[ ..., Tuple[...] ]
-            [fixture] Funciton to make a validator ad and delegator contract in the desired state.
+            [fixture] Function to make a validator ad and delegator contract in the desired state.
         partkey_manager: PartkeyManager,
-            [fixture] Particiation key manager.
+            [fixture] Participation key manager.
         logger_mockup : logging.Logger
             [fixture] Logger
         withdraw_contract : bool
@@ -1151,7 +1151,7 @@ class TestDelcoEndedStateHandler():
             delco_app,
             logger_mockup
         )
-        # Check if partkey deletion correctly scheduled (actual deletion tested as apar of `partkeyManager` tests)
+        # Check if partkey deletion correctly scheduled (actual deletion tested as a part of `partkeyManager` tests)
         partkey_scheduled_deletion = partkey_manager.buffer_generated.get_next()['scheduled-deletion']
         assert partkey_scheduled_deletion == expected_partkey_scheduled_deletion
 
@@ -1187,9 +1187,9 @@ class TestDelcoEndedStateHandler():
         algorand_client : AlgorandClient
             [fixture] Algorand client.
         valad_and_delco_app_wrapper_and_valman : Callable[ ..., Tuple[...] ]
-            [fixture] Funciton to make a validator ad and delegator contract in the desired state.
+            [fixture] Function to make a validator ad and delegator contract in the desired state.
         partkey_manager: PartkeyManager,
-            [fixture] Particiation key manager.
+            [fixture] Participation key manager.
         logger_mockup : logging.Logger
             [fixture] Logger
         """
@@ -1222,13 +1222,13 @@ class TestDelcoEndedStateHandler():
             delco_app,
             logger_mockup
         )
-        # Check if partkey deletion correctly scheduled (actual deletion tested as apar of `partkeyManager` tests)
+        # Check if partkey deletion correctly scheduled (actual deletion tested as a part of `partkeyManager` tests)
         partkey_scheduled_deletion = partkey_manager.buffer_generated.get_next()['scheduled-deletion']
         assert partkey_scheduled_deletion == expected_partkey_scheduled_deletion
 
 
 class TestDaemonDelcoHandler:
-    """Chech if handling of a delco in a specific state is correct.
+    """Check if handling of a delco in a specific state is correct.
     """
     pass
 
@@ -1250,7 +1250,7 @@ class TestDaemonMisc:
         break_algod: bool,
         expected_is_ok_flag: bool
     ):
-        """Test whether the check algod status functino reports an algod problem.
+        """Test whether the check algod status function reports an algod problem.
 
         Notes
         -----
@@ -1270,16 +1270,10 @@ class TestDaemonMisc:
             algorand_client.client.algod.algod_address = "https://some.cloud"
         res = Daemon.check_algod_status(algorand_client)
         assert(res.is_ok == expected_is_ok_flag)
-        
-
-class TestDaemonJourney:
-    """Go from non-existent to finished delco along the possible paths.
-    """
-    pass
 
 
 class TestDaemonConnectivityReliability:
-    """Interrup Daemon's connectivity to check corresponding error handling.
+    """Interrupt Daemon's connectivity to check corresponding error handling.
     """
     
     @staticmethod
@@ -1337,7 +1331,7 @@ class TestDaemonConnectivityReliability:
         if break_algod:
             algod_address = daemon.algorand_client.client.algod.algod_address
             daemon.algorand_client.client.algod.algod_address = "https://some.cloud"
-        # Run part that should update valad stte
+        # Run part that should update valad state
         daemon.maintain_contracts()
         # Evaluate
         valad_state = valad_app_wrapper.valad_client.get_global_state().state.as_bytes
@@ -1345,8 +1339,85 @@ class TestDaemonConnectivityReliability:
         # Fix error
         if break_algod:
             daemon.algorand_client.client.algod.algod_address = algod_address
-        # Run part that should update valad stte
+        # Run part that should update valad state
         daemon.maintain_contracts()
         # Evaluate
         valad_state = valad_app_wrapper.valad_client.get_global_state().state.as_bytes
         assert(valad_state == second_expected_valad_state)
+
+        
+class TestDaemonRebootReliability:
+    """Interrupt Daemon's power (turn Daemon off) to check corresponding error handling.
+    """
+        
+    @staticmethod
+    @pytest.mark.parametrize(
+        "algo_fee_asset, delben_equal_delman, valad_state", 
+        [   
+            (True, True, VALAD_STATE_READY)
+        ]
+    )
+    def test_partkey_import_after_reboot(
+        valad_app_wrapper_and_valman: Callable[
+            [AlgorandClient, Noticeboard, ActionInputs, bytes], 
+            Tuple[ValadAppWrapper, AddressAndSigner]
+        ],
+        prepare_daemon_config : Callable[
+            [Path, Noticeboard], 
+            Callable[..., Tuple[Path, str]]
+        ],
+        noticeboard: Noticeboard,
+        action_inputs: ActionInputs
+    ):
+        """Check that the daemon can import already-generated partkeys after a reboot.
+
+        Parameters
+        ----------
+        valad_app_wrapper_and_valman : Callable
+            [fixture] Callable for making the validator ad.
+        prepare_daemon_config : Callable
+            [fixture] Prepare configuration for the daemon.
+        noticeboard: Noticeboard
+            [fixture] Noticeboard utility class.
+        action_inputs: ActionInputs
+            [fixture] Settings for the test.
+        """
+        # Make valad
+        valad_app_wrapper, _ = valad_app_wrapper_and_valman
+        # Make config file for daemon
+        config_path, config_name = prepare_daemon_config(
+            valad_id=[valad_app_wrapper.app_id]
+        )
+        # Initialize daemon
+        daemon = Daemon(
+            str(Path(config_path, 'daemon.log')),
+            str(Path(config_path, config_name))
+        )
+        # Create delegator contract for the validator ad that the daemon is servicing
+        delco_id = noticeboard.initialize_delegator_contract_state(
+            action_inputs=action_inputs, 
+            val_app_id=valad_app_wrapper.app_id,
+            target_state='READY'
+        )
+        # Check that the generated partkey buffer is empty
+        assert len(daemon.partkey_manager.buffer_generated.partkeys) == 0
+        # Run the daemon to service delco and generate the partkey
+        daemon.maintain_contracts() # Get contract info and request partkey generation
+        daemon.partkey_manager.refresh() # Ask the node to generate the partkey
+        # Wait for partkey generation before taking further action
+        time.sleep(calc_sleep_time_for_partkey_generation(
+            daemon.delco_app_list.get_app_list()[0].round_end - daemon.delco_app_list.get_app_list()[0].round_start
+        ))
+        # Call once more to detect successful generation and move to generated buffer
+        daemon.partkey_manager.refresh()
+        # Check that the partkey is in the generated buffer
+        assert len(daemon.partkey_manager.buffer_generated.partkeys) == 1
+        # Mimic Daemon shutdown by deleting it
+        del daemon
+        # Mimic Daemon start by initializing it again
+        daemon = Daemon(
+            str(Path(config_path, 'daemon.log')),
+            str(Path(config_path, config_name))
+        )
+        # Check that the import was successful
+        assert len(daemon.partkey_manager.buffer_generated.partkeys) == 1

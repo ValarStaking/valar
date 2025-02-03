@@ -8,6 +8,7 @@ Some terms are shortened to preserve space:
 import copy
 import time
 from pathlib import Path
+from typing import Tuple, List
 from dataclasses import dataclass
 from urllib.error import URLError, HTTPError
 
@@ -150,6 +151,15 @@ class Daemon(object):
             self.algorand_client,
             self.logger
         )
+
+        ### Initialize app wrappers ####################################################################################
+        self.populate_valad_wrapper_list() # Initialize valad wrappers using config
+        self.populate_delco_wrapper_list() # Initialize delco wrappers using the valads
+
+        ### Fetch existing partkeys (e.g. after reboot) ################################################################
+        self.partkey_manager.try_adding_generated_keys_to_buffer(
+            self.delco_app_list.get_partkey_params_list()
+        )
         
 
     @staticmethod
@@ -161,7 +171,7 @@ class Daemon(object):
         Notes
         -----
         URLError 111: Algod service is offline
-        URLError -2: Can not reach serice (internet offline or initialization URL/token is not correct)
+        URLError -2: Can not reach service (internet offline or initialization URL/token is not correct)
 
         Parameters
         ----------
@@ -514,7 +524,7 @@ class Daemon(object):
         delco_app : DelcoAppWrapper
         """
         logger.log_delco_in_live_handler(app_id=delco_app.app_id)
-        # Call the coresponding checkup functions, which could result in a state change
+        # Call the corresponding checkup functions, which could result in a state change
         # Check if expired
         try:
             report_contract_expired(
@@ -537,8 +547,8 @@ class Daemon(object):
         except HTTPError: # Failed transaction on public network
             logger.log_httperror_contract_expired(app_id=delco_app.app_id)
         except AlgodHTTPError: # Failed transaction on public network
-            logger.log_httperror_cannot_pay(app_id=delco_app.app_id)
-        # Check if ALGO (max) or gating ASA (min) limits brached
+            logger.log_httperror_contract_expired(app_id=delco_app.app_id)
+        # Check if ALGO (max) or gating ASA (min) limits breached
         try:
             report_delben_breach_limits(
                 algorand_client=algorand_client,
@@ -562,7 +572,7 @@ class Daemon(object):
         except HTTPError: # Failed transaction on public network
             logger.log_httperror_gating_or_stake_limit_breached(app_id=delco_app.app_id)
         except AlgodHTTPError: # Failed transaction on public network
-            logger.log_httperror_cannot_pay(app_id=delco_app.app_id)
+            logger.log_httperror_gating_or_stake_limit_breached(app_id=delco_app.app_id)
         try: # Check if can pay
             report_delco_breach_pay( # Error if can pay, success if can not
                 algorand_client=algorand_client,
@@ -683,12 +693,14 @@ class Daemon(object):
             logger.log_no_partkeys_found_for_ended_or_deleted(app_id=delco_app.app_id)
 
 
-    def maintain_contracts(
-        self
-    ) -> None:
-        """Maintain (service) the validator ads and delegator contracts.
+    def populate_valad_wrapper_list(self) -> Tuple[int, List]:
+        """Populate the list of validator ad apps wrappers.
+
+        Returns
+        -------
+        Tuple[int, int]
+            Number of validator ads connected and the list of validator ad IDs from the config file.
         """
-        ### Valad part #################################################################################################
         # Read in latest valad app IDs
         self.daemon_config.read_swap()
         # Fetch valads based on the info provided in the config
@@ -703,13 +715,12 @@ class Daemon(object):
             num_of_updated_valads=num_of_updated_valads, 
             num_of_valads=num_of_valads
         )
-        # Stop if there will be nothing to service
-        if num_of_valads == 0:
-            self.logger.log_zero_valad_clients(valad_id_list=valad_id_list)
-            return
-        # Set to valad ready where applicable
-        self.maintain_valads()
-        ### Delco part #################################################################################################
+        return num_of_valads, valad_id_list
+
+
+    def populate_delco_wrapper_list(self) -> None:
+        """Populate the list of delegator contract apps wrappers.
+        """
         # Fetch IDs of delcos associated with the valads
         delco_id_list = [d_id for valad_app in self.valad_app_list.get_app_list() for d_id in valad_app.delco_id_list]
         self.logger.log_num_of_connected_delcos(num_of_delcos=len(delco_id_list))
@@ -722,6 +733,23 @@ class Daemon(object):
             num_of_updated_delcos=num_of_updated_delcos, 
             num_of_delcos=num_of_delcos
         )
+
+
+    def maintain_contracts(
+        self
+    ) -> None:
+        """Maintain (service) the validator ads and delegator contracts.
+        """
+        ### Valad part #################################################################################################
+        num_of_valads, valad_id_list = self.populate_valad_wrapper_list()
+        # Stop if there will be nothing to service
+        if num_of_valads == 0:
+            self.logger.log_zero_valad_clients(valad_id_list=valad_id_list)
+            return
+        # Set to valad ready where applicable
+        self.maintain_valads()
+        ### Delco part #################################################################################################
+        self.populate_delco_wrapper_list()
         # Handle each delco based on its state
         self.maintain_delcos()
 

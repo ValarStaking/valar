@@ -2,7 +2,11 @@
  * Constants related to smart contracts and AVM.
  */
 import { AlgorandRewards } from "@/lib/types";
+import { getPlatformConfig } from "@/utils/config/getPlatformConfig";
 import { strToBytes } from "@/utils/convert"
+
+// Get platform configuration
+const config = getPlatformConfig();
 
 // About minimum balance requirement (MBR) - based on algod parameters (v4.0.0)
 export const MBR_ACCOUNT = 100_000;
@@ -38,8 +42,14 @@ export const ZERO_ADDRESS: string = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 // Algorand staking rewards info
 export const ALGORAND_REWARDS: AlgorandRewards = {
-  startRound: BigInt(0),   // first block
-  startReward: 10*10**6,   // starting rewards rate [microALGO]
-  decayRounds: 10**6,      // decay window [number of rounds]
-  decayRate: 1.00,         // decay rate [%]
+  startRound: BigInt(config.algoRewards.startRound),   // first block
+  startReward: config.algoRewards.startReward,         // starting rewards rate [microALGO]
+  decayRounds: config.algoRewards.decayRounds,         // decay window [number of rounds]
+  decayRate: config.algoRewards.decayRate,             // decay rate [%]
 }
+
+// Algorand minimum staking amount for rewards
+export const MIN_ALGO_STAKE_FOR_REWARDS = 30_000_000_000;  // [microALGO]
+
+// Maximum transaction validity window
+export const MAX_TXN_VALIDITY: number = 1_000;  // [rounds]

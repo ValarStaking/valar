@@ -1,6 +1,12 @@
 {
-  "noticeboardAppID": 16318962,
-  "tc": "d0e93dc94155a9cbafed736d945c5c0004d2d8a653e0fad1b57358185e08f2fb",
+  "noticeboardAppID": 16324162,
+  "tc": "09f2ea6a4af76a9770125165865fd03d831df6b94850ac07fe657a827ef37cf9",
+  "algoRewards": {
+    "startRound": 0,
+    "startReward": 10000000,
+    "decayRounds": 1000000,
+    "decayRate": 1
+  },
 	"currencies": {
 	  "0": {
 	    "allowed": true,
@@ -10,11 +16,28 @@
 	    "adTermsFees": {
 	      "paymentCurrency": "0",
 	      "setupFee": 1.0,
-	      "minOperationalFee": 5.0,
-	      "varOperationalFee": 10.0
+	      "minOperationalFee": 10.0,
+	      "varOperationalFee": 40.0
 	    },
 	    "adTermsFeesMin": {
 	      "setupFee": 0.5,
+	      "minOperationalFee": 5.00,
+	      "varOperationalFee": 0
+	    }
+	  },
+    "16324146": {
+	    "allowed": true,
+	    "ticker": "USDC",
+	    "decimals": 6,
+	    "displayDecimals": 2,
+	    "adTermsFees": {
+	      "paymentCurrency": "16324146",
+	      "setupFee": 0.5,
+	      "minOperationalFee": 5.0,
+	      "varOperationalFee": 20.0
+	    },
+	    "adTermsFeesMin": {
+	      "setupFee": 0.3,
 	      "minOperationalFee": 3.33,
 	      "varOperationalFee": 0
 	    }
@@ -28,18 +51,19 @@
     "maxStake": {
       "min": 0,
       "max": 60000000000000
-    }
+    },
+    "maxUsers": 4
   },
 	"suggestions": {
 		"delCo": {
 			"duration": 1,
 			"paymentAsa": "0",
 			"maxStakeBuffer": 20,
-			"maxStake": 100000
+			"maxStake": 100000000000
 		},
 		"valAd": {
       "time": {
-        "validFor": 5,
+        "validFor": 30,
         "minDuration": 0.05,
         "maxDuration": 120,
         "setupTime": 5,

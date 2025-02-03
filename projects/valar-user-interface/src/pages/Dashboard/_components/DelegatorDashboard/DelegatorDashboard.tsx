@@ -1,5 +1,5 @@
 import { Container } from "@/components/Container/Container";
-import DelCoListCard from "./_components/DelCoList/DelCoListCard";
+import DelCoListCard from "./DelCoList/DelCoListCard";
 
 const DelegatorDashboard = () => {
   return (

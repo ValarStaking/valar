@@ -1,17 +1,12 @@
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/shadcn-utils";
 import { Cell, flexRender, Row, Table } from "@tanstack/react-table";
-import { ValAdListItem } from "./utils";
+
+import { ValAdListItem } from "./valAdList.utils";
 
 type KeyType = keyof ValAdListItem | "details";
 
-const ValAdListItemMobile = ({
-  className,
-  row,
-}: {
-  className?: string;
-  row: Row<ValAdListItem>;
-}) => {
+const ValAdListItemMobile = ({ className, row }: { className?: string; row: Row<ValAdListItem> }) => {
   const cells = row.getAllCells().reduce(
     (acc, cell) => {
       acc[cell.column.id as KeyType] = cell;
@@ -26,9 +21,7 @@ const ValAdListItemMobile = ({
   };
 
   return (
-    <div
-      className={cn("rounded-lg bg-background-light p-3 text-xs", className)}
-    >
+    <div className={cn("rounded-lg bg-background-light p-3 text-xs", className)}>
       <div className="flex justify-between">
         <div className="flex gap-1">
           <span className="text-text-tertiary">Status:</span>
@@ -44,16 +37,14 @@ const ValAdListItemMobile = ({
         <div className="space-y-1">
           <div>Ad ID: {renderCell("adId")}</div>
           <div>
-            <span className="text-text-tertiary">Occupation:</span>{" "}
-            {renderCell("occupation")}
+            <span className="text-text-tertiary">Occupation:</span> {renderCell("occupation")}
           </div>
           <div>
             <span className="text-text-tertiary">Earning (total):</span>
             {renderCell("earnTotal")}
           </div>
           <div>
-            <span className="text-text-tertiary">Earning (to claim):</span>{" "}
-            {renderCell("earnClaim")}
+            <span className="text-text-tertiary">Earning (to claim):</span> {renderCell("earnClaim")}
           </div>
         </div>
         <div>{renderCell("details")}</div>

@@ -1,8 +1,8 @@
 import pytest
-from pathlib import Path
+# from pathlib import Path
 
-import sys
-sys.path.insert(0, str(Path(*Path(__file__).parent.parts[:-3], 'valar-smart-contracts')))
+# import sys
+# sys.path.insert(0, str(Path(*Path(__file__).parent.parts[:-3], 'valar-smart-contracts')))
 from tests.noticeboard.config import ActionInputs
 
 

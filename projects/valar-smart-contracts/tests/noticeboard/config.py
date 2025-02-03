@@ -142,6 +142,7 @@ class ActionInputs:
 
     # Noticeboard
     pla_manager: str | None = None
+    asset_config_manager: str | None = None
 
     tc_sha256: bytes = DEFAULT_TC_SHA256
 

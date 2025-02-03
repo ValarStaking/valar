@@ -1,10 +1,16 @@
+import { DelegatorQuery } from "@/api/queries/delegator-contracts";
 import ColumnDropdown from "@/components/DataTable/ColumnDropdown";
 import TableMain from "@/components/DataTable/TableMain";
 import TablePagination from "@/components/DataTable/TablePagination";
 import TableSearch from "@/components/DataTable/TableSearch";
+import DelCoDrawer from "@/components/Drawers/DelCoDrawer/DelCoDrawer";
 import IdenticonAvatar from "@/components/Identicon/Identicon";
 import ContractStatus from "@/components/Status/ContractStatus";
 import { Separator } from "@/components/ui/separator";
+import { useAppGlobalState } from "@/contexts/AppGlobalStateContext";
+import { useDashboardContext } from "@/contexts/DashboardContext";
+import { DelegatorContractGlobalState } from "@/interfaces/contracts/DelegatorContract";
+import { ellipseAddress } from "@/utils/convert";
 import {
   ColumnFiltersState,
   createColumnHelper,
@@ -14,19 +20,13 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { useWallet } from "@txnlab/use-wallet-react";
 import { useEffect, useState } from "react";
 
+import { getValDelCoList, ValDelCoListItem } from "./valDelCoList.utils";
 import ValContractListMobile from "./ValDelCoListMobile";
-import { useAppGlobalState } from "@/contexts/AppGlobalStateContext";
-import { useWallet } from "@txnlab/use-wallet-react";
-import { DelegatorContractGlobalState } from "@/interfaces/contracts/DelegatorContract";
-import { fetchDelegatorContracts } from "@/api/queries/delegator-contracts";
-import { ValDelCoListItem, getValDelCoListItems } from "./utils";
-import DelCoDrawer from "@/components/Drawers/DelCoDrawer/DelCoDrawer";
-import { ellipseAddress } from "@/utils/convert";
 
 const columnHelper = createColumnHelper<ValDelCoListItem>();
-
 
 const ValDelCoListCard = () => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -37,40 +37,41 @@ const ValDelCoListCard = () => {
 
   const [delCoMap, setDelCoMap] = useState<Map<bigint, DelegatorContractGlobalState> | undefined>(undefined);
   const [tableData, setTableData] = useState<ValDelCoListItem[]>([]);
+  const { delCoRefetch, setDelCoRefetch } = useDashboardContext();
 
   //Fetching all Delegator Contracts of under all Validator Ads of current account
   useEffect(() => {
     const fetch = async () => {
       if (activeAddress && valsMap && valAdsMap) {
         // Get all Ad IDs of current account
-        const adIds = valsMap.get(activeAddress)
-        if(adIds){
+        const adIds = valsMap.get(activeAddress);
+        if (adIds) {
           // Get global state for all Ad IDs of current account
-          const adsGS = adIds!.map(adId => valAdsMap.get(adId));
+          const adsGS = adIds!.map((adId) => valAdsMap.get(adId));
           // Fetch global state of all active delegator contracts of all Ads of current account
-          const contractIds = adsGS.flatMap((ad) => (ad!.delAppList.filter((id) => id != 0n)));
+          const contractIds = adsGS.flatMap((ad) => ad!.delAppList.filter((id) => id != 0n));
 
-          const res = await fetchDelegatorContracts(algorandClient.client.algod, contractIds);
+          const res = await DelegatorQuery.fetchDelegatorContracts(algorandClient.client.algod, contractIds);
 
           console.log("Delegator Contracts Map ::", res);
           setDelCoMap(res);
         } else {
           // In case the address is not validator owner
-          setDelCoMap(undefined)
+          setDelCoMap(undefined);
         }
       } else {
-        setDelCoMap(undefined)
+        setDelCoMap(undefined);
       }
     };
 
     fetch();
-  }, [activeAddress, valsMap, valAdsMap]);
+  }, [activeAddress, valsMap, valAdsMap, delCoRefetch]);
 
   // Convert Delegator Contracts to table items
   useEffect(() => {
     const fetch = async () => {
-      if(delCoMap){
-        const valDelCoList = await getValDelCoListItems(delCoMap);
+      if (delCoMap) {
+        const valDelCoList = await getValDelCoList(delCoMap);
         setTableData(valDelCoList);
       }
     };
@@ -86,8 +87,7 @@ const ValDelCoListCard = () => {
       cell: (info) => {
         return (
           <div className="flex items-center gap-2">
-            <IdenticonAvatar value={info.getValue()} className="h-5 w-5" />{" "}
-            {ellipseAddress(info.getValue())}
+            <IdenticonAvatar value={info.getValue()} className="h-5 w-5" /> {ellipseAddress(info.getValue())}
           </div>
         );
       },
@@ -104,19 +104,19 @@ const ValDelCoListCard = () => {
     columnHelper.accessor("maxStake", { header: "Max stake" }),
     columnHelper.accessor("duration", { header: "Duration" }),
     columnHelper.accessor("currency", { header: "Currency" }),
-    columnHelper.accessor("setupFee", {header: "Setup fee"}),
-    columnHelper.accessor("opFee", {header: "Op. fee"}),
-    columnHelper.accessor("warnings", {header: "Warnings"}),
-    columnHelper.accessor("latestWarning", {header: "Latest warning"}),
-    columnHelper.accessor("setupTime", {header: "Setup time"}),
-    columnHelper.accessor("confirmationTime", {header: "Confirmation time"}),
-    columnHelper.accessor("gated", {header: "Gated"}),
+    columnHelper.accessor("setupFee", { header: "Setup fee" }),
+    columnHelper.accessor("opFee", { header: "Op. fee" }),
+    columnHelper.accessor("warnings", { header: "Warnings" }),
+    columnHelper.accessor("latestWarning", { header: "Latest warning" }),
+    columnHelper.accessor("setupTime", { header: "Setup time" }),
+    columnHelper.accessor("confirmationTime", { header: "Confirmation time" }),
+    columnHelper.accessor("gated", { header: "Gated" }),
     columnHelper.display({
       header: () => null,
       id: "details",
-      cell: (info) => <DelCoDrawer
-        delAppId={info.row.getValue("contractId")}
-      />,
+      cell: (info) => (
+        <DelCoDrawer delAppId={info.row.getValue("contractId")} onClose={() => setDelCoRefetch(!delCoRefetch)} />
+      ),
       enableHiding: false,
     }),
   ];
@@ -165,15 +165,8 @@ const ValDelCoListCard = () => {
           <div className="flex flex-col justify-between gap-2 px-1 lg:flex-row lg:items-center">
             <h1 className="font-bold">Users' Contracts</h1>
             <div className="flex justify-between gap-1">
-              <TableSearch
-                table={contractsTable}
-                searchColumn="adId"
-                className="max-w-[150px]"
-              />
-              <ColumnDropdown
-                className="hidden lg:block"
-                table={contractsTable}
-              />
+              <TableSearch table={contractsTable} searchColumn="adId" className="max-w-[150px]" />
+              <ColumnDropdown className="hidden lg:block" table={contractsTable} />
             </div>
           </div>
           <Separator className="hidden bg-border lg:block" />

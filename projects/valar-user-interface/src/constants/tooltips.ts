@@ -42,10 +42,17 @@ export class ToolTips {
   static ConfirmationTimeAdCreation = `Maximum amount of time a new user has in order to confirm the setup that you prepare for them.`;
 
   static EligibilityASA = `Node runner allows access to their service only if the user's account has at least the stated amounts of the stated
-  ASA1 and ASA2 at all times, otherwise the contract can get terminated.`;
+  ASA1 and ASA2 at all times, otherwise the contract can get terminated.
+  Amounts are displayed in ASA's smallest unit.`;
+
+  static EligibilityASASingle = `Node runner allows access to their service only if the user's account has at least the stated amounts of the stated
+  ASA at all times, otherwise the contract can get terminated.
+  Amounts are displayed in ASA's smallest unit.`;
 
   static EligibilityASAAdCreation = `Allow access to your service only if the user's account has at least the defined amounts
-  of the ASA1 and ASA2 at all times, otherwise the contract can get terminated. Leave empty if there should be no restrictions.`;
+  of the ASA1 and ASA2 at all times, otherwise the contract can get terminated.
+  Leave empty if there should be no restrictions.
+  Amounts are entered in ASA's smallest unit.`;
 
   static NodeRunnerFee = `Total fee paid to the node runner for the service, consisting of setup and operational fees.`;
 
@@ -55,12 +62,14 @@ export class ToolTips {
   The deposit gets returned when you stop using the platform.`;
 
   static AlgorandDepositVal = `Deposit charged by the Algorand network to store your node runner ad.
+  The deposit is partially charged on ad creation and when configuring the ad for the first time.
   The deposit gets returned when you stop using the platform.`;
 
   static AlgorandDepositUserAndDel = `Deposit charged by the Algorand network to store your address information and your service contract.
   The deposit gets returned when you stop using the platform.`;
 
   static AlgorandDepositUserAndVal = `Deposit charged by the Algorand network to store your address information and your node runner ad.
+  The deposit is partially charged on ad creation and when configuring the ad for the first time.
   The deposit gets returned when you stop using the platform.`;
 
   static MonitorPerformance = `Check or register for off-chain monitoring of your account to be notified
@@ -74,4 +83,9 @@ export class ToolTips {
   static MaxNoOfUsers = `Maximum number of users that can simultaneously stake via this ad.`;
 
   static AcceptingNewUsers = `Set to enable accepting new users to stake via your ad.`;
+
+  static AlgorandRegistrationFee = `Algorand network charges a fee to opt an account into the network's monitoring mechanism.
+  Without it, you cannot stake via Valar.
+  Paying this fee is a condition by the network to be eligible for staking rewards.
+  It is paid when you confirm the setup that the node runner prepares for you.`;
 }

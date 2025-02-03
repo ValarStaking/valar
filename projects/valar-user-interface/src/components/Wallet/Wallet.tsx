@@ -1,5 +1,6 @@
+import { FolksFinance } from "@/api/contract/galgo/helpers";
+import { UserQuery } from "@/api/queries/user";
 import { Button } from "@/components/ui/button";
-import { Buffer } from "buffer";
 import {
   Dialog,
   DialogContent,
@@ -8,78 +9,80 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MBR_ACCOUNT, MIN_ALGO_STAKE_FOR_REWARDS } from "@/constants/smart-contracts";
 import { useAppGlobalState } from "@/contexts/AppGlobalStateContext";
 import { UserInfo } from "@/interfaces/contracts/User";
 import { cn } from "@/lib/shadcn-utils";
-import { KeyRegParams } from "@/lib/types";
-import useUserStore from "@/store/userStore";
+import useUserStore, { AccountInfo } from "@/store/userStore";
+import { ellipseAddress } from "@/utils/convert";
 import { useWallet } from "@txnlab/use-wallet-react";
 import { LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
-import { ASA_ID_ALGO } from "@/constants/smart-contracts";
-import { ellipseAddress } from "@/utils/convert";
 
-export const Wallet = ({ className, onClick, variant="wallet", text="Connect Wallet" }: { className?: string, onClick?: () => void, variant?: "wallet" | "v_outline", text?: string }) => {
-  const {
-    activeAddress,
-    wallets,
-    activeWallet,
-    activeAccount,
-    activeWalletAccounts,
-  } = useWallet();
+import { notify } from "../Notification/notification";
+
+export const Wallet = ({
+  className,
+  onClick,
+  variant = "wallet",
+  text = "Connect Wallet",
+}: {
+  className?: string;
+  onClick?: () => void;
+  variant?: "wallet" | "v_outline";
+  text?: string;
+}) => {
+  const { activeAddress, wallets, activeWallet, activeAccount, activeWalletAccounts } = useWallet();
   const { user, setUser } = useUserStore();
   const { algorandClient } = useAppGlobalState();
+  const algodClient = algorandClient.client.algod;
   const [open, onOpenChange] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
     const fetch = async () => {
-      console.log(`Fetching user info for ${activeAddress}.`)
+      console.log(`Fetching user info for ${activeAddress}.`);
       //Fetching user role and algo amount
       if (activeAddress) {
-        try{
-          const userInfo = await UserInfo.getUserInfo(algorandClient.client.algod, activeAddress);
-          const res = await algorandClient.client.algod.accountInformation(activeAddress).do()
-          const algo: bigint = res["amount"];
-          const assets = new Map<bigint, bigint>();
-          assets.set(ASA_ID_ALGO, algo);
-          res["assets"].forEach((asset: { "amount": bigint, "asset-id": bigint, "is-frozen": boolean }) => {
-            assets.set(BigInt(asset["asset-id"]), BigInt(asset["amount"]));
-          });
+        try {
+          const userInfo = await UserInfo.getUserInfo(algodClient, activeAddress);
 
-          console.log("Assets :: ")
-          console.log(assets)
+          const account = await UserQuery.getAccountInfo(algodClient, activeAddress);
 
-          let keyRegParams = undefined;
-          if(res["participation"]){
-            keyRegParams = {
-              voteKey: new Uint8Array(Buffer.from(res["participation"]["vote-participation-key"], 'base64')),
-              selectionKey: new Uint8Array(Buffer.from(res["participation"]["selection-participation-key"], 'base64')),
-              voteFirst: BigInt(res["participation"]["vote-first-valid"]),
-              voteLast: BigInt(res["participation"]["vote-last-valid"]),
-              voteKeyDilution: BigInt(res["participation"]["vote-key-dilution"]),
-              stateProofKey: new Uint8Array(Buffer.from(res["participation"]["state-proof-key"], 'base64')),
-            } as KeyRegParams;
+          // Check if account has minted gALGO - if FolksFinance.appId is different than zero
+          console.log("FolksFinance appId: ", FolksFinance.appId);
+          let galgoAccount: AccountInfo | null = null;
+          if (FolksFinance.appId !== 0) {
+            const galgoEscrow = FolksFinance.getEscrow(activeAddress);
+            console.log("Account's gALGO escrow on FolksFinance: ", galgoEscrow);
+
+            galgoAccount = await UserQuery.getAccountInfo(algodClient, galgoEscrow);
+            if (galgoAccount.algo < MBR_ACCOUNT) galgoAccount = null;
           }
 
-          console.log("Key reg parameters of user: ", keyRegParams);
+          let beneficiary = account; // by default set connected user as beneficiary
+          // Unless the account has less then min ALGO for staking but the gALGO escrow account does have more
+          if (
+            beneficiary.algo < MIN_ALGO_STAKE_FOR_REWARDS &&
+            galgoAccount !== null &&
+            galgoAccount.algo >= MIN_ALGO_STAKE_FOR_REWARDS
+          ) {
+            beneficiary = galgoAccount;
+          }
 
-          const trackedPerformance = res["incentive-eligible"] as boolean;
-
-          setUser({address: activeAddress, algo: algo, assets: assets, keyRegParams: keyRegParams, trackedPerformance: trackedPerformance, userInfo: userInfo});
+          setUser({
+            ...account,
+            userInfo: userInfo,
+            beneficiary: beneficiary,
+            galgo: galgoAccount,
+          });
         } catch (error) {
           console.error("Error in fetching user:", error);
         }
       } else {
-        if(user) {
+        if (user) {
           // Clear user
-          setUser( null );
+          setUser(null);
         }
       }
     };
@@ -97,13 +100,12 @@ export const Wallet = ({ className, onClick, variant="wallet", text="Connect Wal
 
       <DialogContent>
         <DialogHeader>
-          {!activeWallet ?
-            <DialogTitle> Connect Your Wallet </DialogTitle> :
+          {!activeWallet ? (
+            <DialogTitle> Connect Your Wallet </DialogTitle>
+          ) : (
             <DialogTitle> Modify Your Wallet </DialogTitle>
-          }
-          <DialogDescription>
-            Select your wallet to access your account.
-          </DialogDescription>
+          )}
+          <DialogDescription>Select your wallet to access your account.</DialogDescription>
         </DialogHeader>
         {!activeWallet ? (
           <div className="flex flex-col gap-4">
@@ -112,23 +114,21 @@ export const Wallet = ({ className, onClick, variant="wallet", text="Connect Wal
                 className="flex w-full cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-background"
                 key={wallet.id}
                 onClick={async () => {
-                  try{
+                  onOpenChange(false);
+                  try {
                     const connectedWalletAccount = await wallet.connect();
-                    if(connectedWalletAccount.length > 0){
-                      onOpenChange(false);
-                      if(onClick) onClick();
+                    if (connectedWalletAccount.length > 0) {
+                      if (onClick) onClick();
                     } else {
-                      console.log("No wallet account connected.")
+                      console.log("No wallet account connected.");
                     }
                   } catch {
-                    console.log("Wallet was not connected.")
+                    notify({ title: "Wallet connection failed.", variant: "error" });
+                    console.log("Wallet was not connected.");
                   }
                 }}
               >
-                <img
-                  src={wallet.metadata.icon}
-                  className="h-9 w-9 rounded-lg"
-                />
+                <img src={wallet.metadata.icon} className="h-9 w-9 rounded-lg" />
                 <div className="w-auto">{wallet.metadata.name}</div>
               </div>
             ))}
@@ -136,22 +136,14 @@ export const Wallet = ({ className, onClick, variant="wallet", text="Connect Wal
         ) : (
           <div>
             <div className="flex w-full items-center gap-4 rounded-lg bg-background p-2">
-              <img
-                src={activeWallet.metadata.icon}
-                className="h-9 w-9 rounded-lg"
-              />
+              <img src={activeWallet.metadata.icon} className="h-9 w-9 rounded-lg" />
               <div className="flex w-auto flex-grow items-center justify-between">
                 <div className="">
                   <h1>{activeWallet.metadata.name} </h1>
-                  <h6 className="max-w-lg text-xs">
-                    {ellipseAddress(activeAccount!.address as string)}
-                  </h6>
+                  <h6 className="max-w-lg text-xs">{ellipseAddress(activeAccount!.address as string)}</h6>
                 </div>
                 <div>
-                  <LogOut
-                    className="mr-2 h-5 w-5 cursor-pointer"
-                    onClick={() => activeWallet.disconnect()}
-                  />
+                  <LogOut className="mr-2 h-5 w-5 cursor-pointer" onClick={() => activeWallet.disconnect()} />
                 </div>
               </div>
             </div>
@@ -160,10 +152,7 @@ export const Wallet = ({ className, onClick, variant="wallet", text="Connect Wal
               onValueChange={(value) => activeWallet.setActiveAccount(value)}
             >
               <SelectTrigger className="mt-4 w-[180px] border-opacity-50">
-                <SelectValue
-                  defaultValue={activeAccount?.name}
-                  placeholder="Choose a Address"
-                />
+                <SelectValue defaultValue={activeAccount?.name} placeholder="Choose a Address" />
               </SelectTrigger>
               <SelectContent>
                 {activeWalletAccounts?.map((acc, index) => (

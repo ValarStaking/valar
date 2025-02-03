@@ -12,7 +12,7 @@
 #    3         Gating within limits                (0-no, 1-yes)
 #
 #    4         Wants to stake (and not withdraw)   (0-no, 1-yes)
-#    5         Reserved                            (...........)
+#    5         Withdraw                            (0-no, 1-yes)
 #    6         Reserved                            (...........)
 #    7 (MSB)   Contract exists                     (0-no, 1-yes)
 delco_actions:
@@ -22,6 +22,9 @@ delco_actions:
     - [  3, 0b_1001_1110]
   not_submitted:
     - [  3, 0b_1001_1111]
+  early_withdraw:
+    - [  3, 0b_1001_1111]
+    - [ 15, 0b_1011_1111]
     
 
 #    Expected delco states according to definitions in smart contracts 
@@ -38,6 +41,11 @@ delco_states:
   not_submitted:
     - DELCO_STATE_READY
     - DELCO_STATE_ENDED_NOT_SUBMITTED
+  early_withdraw:
+    - DELCO_STATE_READY
+    - DELCO_STATE_SUBMITTED
+    - DELCO_STATE_LIVE
+    - DELCO_STATE_ENDED_WITHDREW
 
 
 #    Daemon journey
@@ -65,5 +73,5 @@ node_actions:
     - [ 32, 0b_1000_0001] # Reconnect
   reboot:
     - [  0, 0b_1000_0001]
-    - [ 30, 0b_0000_0001] # Shut down (delete daemon)
-    - [ 32, 0b_1000_0001] # Boot up (spawn new daemon)
+    - [ 10, 0b_0000_0001] # Shut down (delete daemon)
+    - [ 12, 0b_1000_0001] # Boot up (spawn new daemon)

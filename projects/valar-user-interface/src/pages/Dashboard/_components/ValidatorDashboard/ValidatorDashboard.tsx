@@ -14,7 +14,7 @@ const ValidatorDashboard = () => {
         <div className="flex flex-col gap-2 lg:col-span-3 lg:gap-4">
           <CreateAdCard />
           <LearnMoreCard />
-          {/* <ShareAdCard /> */}
+          <ShareAdCard />
         </div>
         <div className="space-y-4 lg:col-span-8">
           <ValAdListCard />

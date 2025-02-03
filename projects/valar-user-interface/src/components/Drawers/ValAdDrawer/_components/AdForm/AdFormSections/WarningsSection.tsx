@@ -3,20 +3,9 @@ import ITooltip from "@/components/Tooltip/ITooltip";
 import { ToolTips } from "@/constants/tooltips";
 import { UseFormReturn } from "react-hook-form";
 
-import {
-  AdFormGroup,
-  AdFormInput,
-  AdFormLabel,
-  AdFormSection,
-} from "../AdFormBuilder";
+import { AdFormGroup, AdFormInput, AdFormLabel, AdFormSection } from "../AdFormBuilder";
 
-const WarningsSection = ({
-  form,
-  disabled = false,
-}: {
-  form: UseFormReturn<any>;
-  disabled?: boolean;
-}) => {
+const WarningsSection = ({ form, disabled = false }: { form: UseFormReturn<any>; disabled?: boolean }) => {
   return (
     <AdFormSection>
       <h1 className="text-sm">Warnings</h1>
@@ -33,12 +22,7 @@ const WarningsSection = ({
           Warning time <ITooltip value={ToolTips.WarningTime} />
         </AdFormLabel>
         <AdFormInput>
-          <FormInputUnit
-            form={form}
-            name="warnTime"
-            unit="hours"
-            disabled={disabled}
-          />
+          <FormInputUnit form={form} name="warnTime" unit="hours" disabled={disabled} />
         </AdFormInput>
       </AdFormGroup>
     </AdFormSection>

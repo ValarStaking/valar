@@ -1,5 +1,6 @@
 import configLocalnet from '../../constants/units.localnet.json'
 import configFnet from '../../constants/units.fnet.json'
+import configMainnet from '../../constants/units.mainnet.json'
 
 export function getUnitsConfig() {
   if (!import.meta.env.VITE_ALGOD_NETWORK) {
@@ -16,6 +17,9 @@ export function getUnitsConfig() {
     case "fnet":
         config = configFnet;
         break;
+    case "mainnet":
+      config = configMainnet;
+      break;
     default:
       throw("Unexpected network.");
       break;

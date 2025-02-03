@@ -1,24 +1,20 @@
-
+import { cn } from "@/lib/shadcn-utils";
+import { ReactNode } from "react";
 
 const LinkExt: React.FC<{
-  href: string
-  text: string
-  className?: string
-}> = ({
-  href,
-  text,
-  className,
-}) => {
-
+  href: string;
+  children: ReactNode;
+  className?: string;
+}> = ({ href, children, className }) => {
   return (
-    <a 
-      href={href} 
-      target="_blank" 
-      rel="noopener noreferrer" 
-      className={className}
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cn("text-secondary", className)}
     >
-      {text}
+      {children}
     </a>
   );
-}
+};
 export default LinkExt;

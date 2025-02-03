@@ -163,6 +163,7 @@ class Noticeboard:
     creator: AddressAndSigner
     dispenser: AddressAndSigner
     pla_manager: AddressAndSigner
+    asset_config_manager: AddressAndSigner
     del_managers: list[AddressAndSigner]
     del_beneficiaries: list[AddressAndSigner]
     val_managers: list[AddressAndSigner]
@@ -182,6 +183,7 @@ class Noticeboard:
         creator: AddressAndSigner,
         dispenser: AddressAndSigner,
         pla_manager: AddressAndSigner,
+        asset_config_manager: AddressAndSigner,
         del_managers: list[AddressAndSigner],
         del_beneficiaries: list[AddressAndSigner],
         val_managers: list[AddressAndSigner],
@@ -196,6 +198,7 @@ class Noticeboard:
         self.creator = creator
         self.dispenser = dispenser
         self.pla_manager = pla_manager
+        self.asset_config_manager = asset_config_manager
         self.del_managers = del_managers
         self.del_beneficiaries = del_beneficiaries
         self.val_managers = val_managers
@@ -301,6 +304,9 @@ class Noticeboard:
             pla_manager = action_inputs.pla_manager \
                 if action_inputs.pla_manager is not None \
                 else gs.pla_manager
+            asset_config_manager = action_inputs.asset_config_manager \
+                if action_inputs.asset_config_manager is not None \
+                else gs.asset_config_manager
             tc_sha256 = action_inputs.tc_sha256
             noticeboard_fees = action_inputs.noticeboard_fees
             noticeboard_terms_timing = action_inputs.noticeboard_terms_timing
@@ -308,6 +314,7 @@ class Noticeboard:
 
             res = self.noticeboard_client.noticeboard_set(
                 pla_manager=pla_manager,
+                asset_config_manager=asset_config_manager,
                 tc_sha256=tc_sha256,
                 noticeboard_fees=noticeboard_fees,
                 noticeboard_terms_timing=noticeboard_terms_timing,

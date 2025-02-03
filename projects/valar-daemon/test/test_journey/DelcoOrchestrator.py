@@ -35,14 +35,20 @@ class DelcoOrchestrator():
             if next_action[0] <= last_round: # Should take action now
                 # Create / delete contract
                 if next_action[1] & 1 << 7:
-                    self.create_contract()
+                    if self.delco_app is None: # Create if non-existent
+                        self.create_contract()
                 else: 
                     self.delete_contract()
                 # # Withdraw from contract
-                # if next_action[1] & 1 << 4:
-                #     self.withdraw_contract()
+                if next_action[1] & 1 << 5:
+                    self.withdraw_contract()
+                else:
+                    pass
+                # # Add / remove gating asset
+                # if next_action[1] & 1 << 3:
+                #     self.fund_gating()
                 # else:
-                #     pass
+                #     self.remove_gating()
                 # # Add / remove gating asset
                 # if next_action[1] & 1 << 3:
                 #     self.fund_gating()
@@ -63,7 +69,7 @@ class DelcoOrchestrator():
                     self.allow_key_confirming = True
                 else:
                     self.allow_key_confirming = False
-                self.actions.pop()
+                self.actions.pop(0)
             return 1
         return 0
     
@@ -76,7 +82,9 @@ class DelcoOrchestrator():
             # action_account=self.noticeboard.del_managers[0]
         )
     
-    def create_contract(self):
+    def create_contract(self) -> None:
+        """Create delegator contract in READY state.
+        """
         delco_id = self.noticeboard.initialize_delegator_contract_state(
             action_inputs=self.action_inputs, 
             val_app_id=self.valad_id,
@@ -91,8 +99,15 @@ class DelcoOrchestrator():
     def delete_contract(self):
         pass
     
-    def withdraw_contract(self):
-        pass
+    def withdraw_contract(self) -> None:
+        """Withdraw from delegator contract.
+        """
+        self.noticeboard.delegator_action(
+            app_id=self.delco_app.app_id,
+            action_name='contract_withdraw',
+            action_inputs=self.action_inputs,
+            val_app=self.delco_app.valad_id,
+        )
     
     def fund_gating(self):
         pass

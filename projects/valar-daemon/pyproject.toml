@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "valar_daemon"
-version = "0.3.0-rc2"
+version = "0.3.1"
 description = "The Valar Daemon is used to automate Validator Manager tasks on the Valar Peer-to-Peer Staking Platform."
 authors = ["Valar Solutions GmbH <info@valar.solutions>"]
 license = "AGPL-3.0-only"
@@ -56,6 +56,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
+pythonpath = ["src", "../valar-smart-contracts"]
 python_files = "test_*.py"
 addopts = "--basetemp=./test/tmp -vv"
 

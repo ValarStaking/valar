@@ -47,10 +47,10 @@ TEST_SCENARIO : list[ValAd] = [
 # -------  Test validator terms -------
 # -------------------------------------
 VALIDATOR_TERMS_TIME = ValidatorTermsTiming(
-    rounds_setup = round(BLOCKS_PER_DAY / 24 / 4),        # Maximum time to prepare the setup: ~15 min [in rounds]
-    rounds_confirm = round(1 * BLOCKS_PER_DAY),           # Waiting time for setup confirmation: ~1 day [in rounds]
-    rounds_duration_min = round(30 * BLOCKS_PER_DAY),     # Minimum staking duration:  ~30 days [in rounds]; must be larger than NOTICEBOARD_TERMS_TIMING.rounds_duration_min_min to succeed  # noqa: E501
-    rounds_duration_max = round(90 * BLOCKS_PER_DAY),     # Minimum staking duration:  ~90 days [in rounds]; must be smaller than NOTICEBOARD_TERMS_TIMING.rounds_duration_max_max to succeed  # noqa: E501
+    rounds_setup = round(BLOCKS_PER_DAY / 24 / 24),       # Maximum time to prepare the setup: ~2.5 min [in rounds]
+    rounds_confirm = round(BLOCKS_PER_DAY/24/12),         # Waiting time for setup confirmation: ~5 min [in rounds]
+    rounds_duration_min = round(BLOCKS_PER_DAY/24/6),    # Minimum staking duration:  10 min [in rounds]; must be larger than NOTICEBOARD_TERMS_TIMING.rounds_duration_min_min to succeed  # noqa: E501
+    rounds_duration_max = round(90 * BLOCKS_PER_DAY),     # Maximum staking duration:  ~90 days [in rounds]; must be smaller than NOTICEBOARD_TERMS_TIMING.rounds_duration_max_max to succeed  # noqa: E501
     round_max_end = 999_999_999_999,                      # End date of node validity [round number]
 )
 

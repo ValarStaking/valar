@@ -2,19 +2,24 @@
 
 Notes
 -----
-- Tests fail when run in a bundle, but succees when run independently.
+- Tests fail when run in a bundle, but success when run independently.
 """
 import copy
 import yaml
 import time
 import pytest
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import List, Tuple
+
+from algokit_utils.beta.algorand_client import AlgorandClient
+from algokit_utils.beta.account_manager import AddressAndSigner
 
 from test.test_journey.DelcoChecker import DelcoChecker
 from test.test_journey.DelcoOrchestrator import DelcoOrchestrator
 from test.test_journey.NodeOrchestrator import NodeOrchestrator
-from test.utils import LocalnerRoundProgressor
+from test.utils import LocalnetRoundProgressor
+from tests.noticeboard.utils import Noticeboard
+from tests.noticeboard.config import ActionInputs
 
 from valar_daemon.constants import (
     DELCO_STATE_READY,
@@ -22,8 +27,10 @@ from valar_daemon.constants import (
     DELCO_STATE_LIVE,
     DELCO_STATE_ENDED_NOT_CONFIRMED,
     DELCO_STATE_ENDED_EXPIRED,
-    DELCO_STATE_ENDED_NOT_SUBMITTED
+    DELCO_STATE_ENDED_NOT_SUBMITTED,
+    DELCO_STATE_ENDED_WITHDREW
 )
+from valar_daemon.AppWrapper import ValadAppWrapper
 
 
 ### Helpers ############################################################################################################
@@ -37,7 +44,7 @@ def load_test_configs(
     Parameters
     ----------
     journey_templates_file : Path, optional
-        Path to the journay templates, by default None
+        Path to the journey templates, by default None
     parameters_file : Path, optional
         Path to the test parameters / config, by default None
 
@@ -103,22 +110,48 @@ def load_test_configs(
 @pytest.mark.parametrize(
     "delco_actions, delco_states, node_actions, "
     "valad_state, timeout_s, round_period_s, delben_equal_delman, algo_fee_asset",
-    # "valad_state, timeout_s, round_period_s, delben_equal_delman, gating_asset_id, fee_asset_id",
     load_test_configs()
 )
 def test_journey(
-    algorand_client,
+    algorand_client: AlgorandClient,
     delco_actions: List[List], 
     delco_states: List, 
     node_actions: List[List],
-    valad_app_wrapper_and_valman,
-    tmp_path,
-    noticeboard,
-    action_inputs,
-    timeout_s,
-    round_period_s,
-    delben_equal_delman, gating_asset_id, fee_asset_id # Remove later
+    valad_app_wrapper_and_valman: Tuple[ValadAppWrapper, AddressAndSigner],
+    tmp_path: Path,
+    noticeboard: Noticeboard,
+    action_inputs: ActionInputs,
+    timeout_s: int,
+    round_period_s: int | float,
+    algo_fee_asset: bool
 ):
+    """Test an entire delegator journey, from non-existent contract to final state.
+
+    Parameters
+    ----------
+    algorand_client : AlgorandClient
+        [param] Algorand client.
+    delco_actions : List[List]
+        [param] Actions taken by the Delegator (new contract, withdraw,  etc.).
+    delco_states : List
+        [param] States traversed by Delegator Contract.
+    node_actions : List[List]
+        [param] Actions applied to the node (power on/off, internet on/off).
+    valad_app_wrapper_and_valman : Callable
+        [fixture] Validator ad app wrapper and validator manager.
+    tmp_path : Path
+        [fixture] Path to temporary test file storage.
+    noticeboard : Noticeboard
+        [fixture] Noticeboard utility instance.
+    action_inputs : ActionInputs
+        [fixture] Test inputs.
+    timeout_s : int
+        [param] Test timeout in seconds (maximal allowed duration).
+    round_period_s : int | float
+        [param] Period / duration of a single round in seconds.
+    algo_fee_asset : bool
+        [param] Flag whether to use ALGO as the fee asset. Not used here, but required - propagated to conftest.
+    """
     
     get_round = lambda: algorand_client.client.algod.status()['last-round']
     
@@ -148,7 +181,7 @@ def test_journey(
         config_path=tmp_path
     )
 
-    lrp = LocalnerRoundProgressor(
+    lrp = LocalnetRoundProgressor(
         algorand_client=algorand_client,
         round_period_s=round_period_s
     )
@@ -176,7 +209,8 @@ def test_journey(
             break
         elif all(check == 0 for check in check_completion):
             result = True
-            print(f'Successfull on round {get_round()}, give daemon change to recognize and log final state (e.g. ended).')
+            print(f'Successful on round {get_round()}, give daemon chance to recognize and log final state (e.g. ended).')
+            print(f'Went through states {delco_states}')
             time.sleep(node_orc.daemon.loop_period_s+1)
             break
         if time.time() - start_time > timeout_s:

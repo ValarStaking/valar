@@ -35,6 +35,14 @@ def pla_manager(
 ) -> AddressAndSigner:
     return create_and_fund_account(algorand_client, dispenser, [asset], algo_amount=TestConsts.acc_dispenser_amt, asa_amount=TestConsts.acc_dispenser_asa_amt)  # noqa: E501
 
+@pytest.fixture(scope="module")
+def asset_config_manager(
+    algorand_client: AlgorandClient,
+    dispenser: AddressAndSigner,
+    asset: int,
+) -> AddressAndSigner:
+    return create_and_fund_account(algorand_client, dispenser, [asset], algo_amount=TestConsts.acc_dispenser_amt, asa_amount=TestConsts.acc_dispenser_asa_amt)  # noqa: E501
+
 @pytest.fixture(scope="function")
 def del_manager(
     algorand_client: AlgorandClient,
@@ -116,6 +124,7 @@ def noticeboard(
     creator: AddressAndSigner,
     dispenser: AddressAndSigner,
     pla_manager: AddressAndSigner,
+    asset_config_manager: AddressAndSigner,
     del_manager: AddressAndSigner,
     del_beneficiary: AddressAndSigner,
     val_manager: AddressAndSigner,
@@ -131,6 +140,7 @@ def noticeboard(
         creator=creator,
         dispenser=dispenser,
         pla_manager=pla_manager,
+        asset_config_manager=asset_config_manager,
         del_managers=[del_manager],
         del_beneficiaries=[del_beneficiary],
         val_managers=[val_manager],

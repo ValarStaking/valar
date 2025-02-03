@@ -17,9 +17,7 @@ const TableSearch = ({
       <Search className="w-4" />
       <Input
         placeholder="Search"
-        value={
-          (table.getColumn(searchColumn)?.getFilterValue() as string) ?? ""
-        }
+        value={(table.getColumn(searchColumn)?.getFilterValue() as string) ?? ""}
         onChange={(event) => {
           table.getColumn(searchColumn)?.setFilterValue(event.target.value);
         }}

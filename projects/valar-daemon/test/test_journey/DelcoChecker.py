@@ -18,7 +18,7 @@ class DelcoChecker(object):
         client : object
             Validator ad or delegator contract client.
         targeted_states : list
-            States that should be observed in the given seequence.
+            States that should be observed in the given sequence.
         """
         # self.prev_state = None
         self.targeted_states = states
@@ -54,7 +54,7 @@ class DelcoChecker(object):
     #     return True
 
     def check_completion(self) -> int:
-        """Check whether states have been visitetd.
+        """Check whether states have been visited.
 
         Returns
         -------

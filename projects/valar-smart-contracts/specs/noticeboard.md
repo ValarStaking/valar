@@ -141,10 +141,10 @@ Sets the contract state to `RETIRED`.
 Returns: nothing.  
 
 - `noticeboard_set`:  
-Requires as input: (new) platform manager, (new) platform's commission percentage, (new) validator setup fee, (new) validator user registration fee, (new) delegator user registration fee, (new) contract terms, and (new) validator ad smart contract template.  
+Requires as input: (new) platform manager, (new) asset config manager, (new) platform's commission percentage, (new) validator setup fee, (new) validator user registration fee, (new) delegator user registration fee, (new) contract terms, and (new) validator ad smart contract template.  
 Succeeds only if called by the current platform manager or contract creator.  
 Fails if called from `RETIRED` state.  
-Sets (anew) the platform manager address, platform's commission percentage, validator setup fee, validator user registration fee, delegator user registration fee, and the validator ad smart contract template.   
+Sets (anew) the platform manager address, the asset config manager, platform's commission percentage, validator setup fee, validator user registration fee, delegator user registration fee, and the validator ad smart contract template.   
 Performs sanity checks on the given parameters.  
 Sets the contract state to `SET`.  
 Returns: nothing.  
@@ -161,7 +161,7 @@ Returns: nothing.
 
 - `noticeboard_optin_asa`:  
 Requires as input: ASA ID, and ALGO payment transaction.  
-Succeeds only if called by the platform manager.  
+Succeeds only if called by the platform manager or asset config manager.  
 Opts the platform address in to the ASA.  
 MUST be accompanied by a payment for the MBR increase.  
 Returns: nothing.  
@@ -169,7 +169,7 @@ Returns: nothing.
 
 - `noticeboard_config_asset`:  
 Requires as input: asset ID, information about the asset (i.e. whether it is accepted as a payment or not, and its minimum pricing), and ALGO payment transaction.  
-Succeeds only if called by the platform manager.  
+Succeeds only if called by the platform manager or asset config manager.  
 Fails if called from `RETIRED` state.  
 Adds or modifies an asset as an accepted payment method.  
 Checks if the asset is an ASA, in which case it checks if the platform address is opted in to the ASA.  

@@ -8,7 +8,7 @@ import { NoticeboardGlobalState } from '@/interfaces/contracts/Noticeboard'
 import { UserInfo } from '@/interfaces/contracts/User'
 import { ValidatorAdGlobalState } from '@/interfaces/contracts/ValidatorAd'
 import { bigIntToBytes, bytesToStr } from '../convert'
-import { ASA_ID_ALGO, MBR_ACCOUNT, MBR_ASA, MBR_NOTICEBOARD_VALIDATOR_AD_CONTRACT_INCREASE, MBR_USER_BOX, MBR_VALIDATOR_AD_ASA_BOX } from '@/constants/smart-contracts'
+import { ASA_ID_ALGO, MAX_TXN_VALIDITY, MBR_ACCOUNT, MBR_ASA, MBR_NOTICEBOARD_VALIDATOR_AD_CONTRACT_INCREASE, MBR_USER_BOX, MBR_VALIDATOR_AD_ASA_BOX } from '@/constants/smart-contracts'
 import { BOX_ASA_KEY_PREFIX, BOX_ASSET_KEY_PREFIX, BOX_DELEGATOR_CONTRACT_TEMPLATE_KEY, BOX_SIZE_PER_REF, BOX_VALIDATOR_AD_TEMPLATE_KEY } from '@/constants/smart-contracts'
 import { VA_STATE_CREATED, VA_STATE_NOT_READY, VA_STATE_READY } from '@/constants/states'
 
@@ -40,6 +40,7 @@ export class ValidatorApiBuilder {
       sender: userAddress,
       receiver: noticeboardAddress,
       amount: microAlgos(amount),
+      validityWindow: MAX_TXN_VALIDITY,
       signer,
     })
 
@@ -134,6 +135,7 @@ export class ValidatorApiBuilder {
       sender: userAddress,
       receiver: noticeboardAddress,
       amount: microAlgos(amount),
+      validityWindow: MAX_TXN_VALIDITY,
       signer,
     })
 
@@ -383,6 +385,7 @@ export class ValidatorApiBuilder {
       sender: userAddress,
       receiver: noticeboardAddress,
       amount: microAlgos(amount),
+      validityWindow: MAX_TXN_VALIDITY,
       signer,
     })
 
@@ -429,6 +432,7 @@ export class ValidatorApiBuilder {
       sender: userAddress,
       receiver: noticeboardAddress,
       amount: microAlgos(amountUserCreate),
+      validityWindow: MAX_TXN_VALIDITY,
       signer,
     });
 
@@ -444,6 +448,7 @@ export class ValidatorApiBuilder {
       sender: userAddress,
       receiver: noticeboardAddress,
       amount: microAlgos(amountAdCreate),
+      validityWindow: MAX_TXN_VALIDITY,
       signer,
     })
 

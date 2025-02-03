@@ -98,6 +98,7 @@ class UserInfo:
 @dataclasses.dataclass(kw_only=True)
 class NoticeboardGlobalState:
     pla_manager: str = ZERO_ADDRESS
+    asset_config_manager: str = ZERO_ADDRESS
 
     tc_sha256: bytes = bytes(32)
 
@@ -117,6 +118,7 @@ class NoticeboardGlobalState:
     def from_global_state(cls, gs: GlobalState) -> "NoticeboardGlobalState":
         return cls(
             pla_manager=decode_abi_address(gs.pla_manager.as_bytes),
+            asset_config_manager=decode_abi_address(gs.asset_config_manager.as_bytes),
             tc_sha256=gs.tc_sha256.as_bytes,
             noticeboard_fees=decode_noticeboard_fees(gs.noticeboard_fees.as_bytes),
             noticeboard_terms_timing=decode_noticeboard_terms_timing(gs.noticeboard_terms_timing.as_bytes),

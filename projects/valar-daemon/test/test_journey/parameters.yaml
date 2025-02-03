@@ -69,3 +69,14 @@
   valad_state: NOT_READY
   timeout_s: 120
   round_period_s: 3
+
+- delco_actions:
+    - early_withdraw
+  delco_states:
+    - early_withdraw
+  node_actions: reboot
+  delben_equal_delman: False
+  algo_fee_asset: True
+  valad_state: NOT_READY
+  timeout_s: 120
+  round_period_s: 3

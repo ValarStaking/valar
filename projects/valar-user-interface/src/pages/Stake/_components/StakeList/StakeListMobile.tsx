@@ -1,19 +1,14 @@
 import IdenticonAvatar from "@/components/Identicon/Identicon";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/shadcn-utils";
-import { Cell, flexRender, Row, Table } from "@tanstack/react-table";
-import { StakeListItem } from "./utils";
 import { ellipseAddress } from "@/utils/convert";
+import { Cell, flexRender, Row, Table } from "@tanstack/react-table";
+
+import { StakeListItem } from "./stakeList.utils";
 
 type KeyType = keyof StakeListItem | "stake";
 
-const StakeListItemMobile = ({
-  className,
-  row,
-}: {
-  className?: string;
-  row: Row<StakeListItem>;
-}) => {
+const StakeListItemMobile = ({ className, row }: { className?: string; row: Row<StakeListItem> }) => {
   const cells = row.getAllCells().reduce(
     (acc, cell) => {
       acc[cell.column.id as KeyType] = cell;
@@ -33,9 +28,7 @@ const StakeListItemMobile = ({
         <div>
           <div className="flex gap-1">
             <div className="text-sm">Node Runner Name:</div>
-            <div className="text-sm text-secondary">
-              {ellipseAddress(cells.name.getValue() as string)}
-            </div>
+            <div className="text-sm text-secondary">{ellipseAddress(cells.name.getValue() as string)}</div>
           </div>
           <div className="flex gap-1">
             <div className="text-sm">Ad Id:</div>

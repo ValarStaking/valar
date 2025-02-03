@@ -6,7 +6,7 @@ import { BoxReference } from "@algorandfoundation/algokit-utils/types/app";
 import { getApplicationAddress, TransactionSigner } from "algosdk";
 import { BoxUtils } from "../contract/box-utils";
 import { TxnParams } from "../txn-params";
-import { MBR_USER_BOX, ROLE_VAL_STR } from "@/constants/smart-contracts";
+import { MAX_TXN_VALIDITY, MBR_USER_BOX, ROLE_VAL_STR } from "@/constants/smart-contracts";
 
 export class UserApiBuilder {
   /**
@@ -41,6 +41,7 @@ export class UserApiBuilder {
       sender: userAddress,
       receiver: noticeboardAddress,
       amount: microAlgos(amount),
+      validityWindow: MAX_TXN_VALIDITY,
       signer,
     });
 

@@ -1,0 +1,93 @@
+{
+  "noticeboardAppID": 0,
+  "tc": "09f2ea6a4af76a9770125165865fd03d831df6b94850ac07fe657a827ef37cf9",
+  "algoRewards": {
+    "startRound": 46512890,
+    "startReward": 10000000,
+    "decayRounds": 1000000,
+    "decayRate": 1
+  },
+	"currencies": {
+	  "31566704": {
+	    "allowed": true,
+	    "ticker": "USDC",
+	    "decimals": 6,
+	    "displayDecimals": 2,
+	    "adTermsFees": {
+	      "paymentCurrency": "31566704",
+	      "setupFee": 0.5,
+	      "minOperationalFee": 5.0,
+	      "varOperationalFee": 20.0
+	    },
+	    "adTermsFeesMin": {
+	      "setupFee": 0.3,
+	      "minOperationalFee": 3.33,
+	      "varOperationalFee": 0
+	    }
+	  },
+    "0": {
+	    "allowed": true,
+	    "ticker": "ALGO",
+	    "decimals": 6,
+	    "displayDecimals": 2,
+	    "adTermsFees": {
+	      "paymentCurrency": "0",
+	      "setupFee": 1.0,
+	      "minOperationalFee": 10.0,
+	      "varOperationalFee": 40.0
+	    },
+	    "adTermsFeesMin": {
+	      "setupFee": 0.5,
+	      "minOperationalFee": 5.00,
+	      "varOperationalFee": 0
+	    }
+	  }
+	},
+  "limits": {
+    "duration": {
+      "min": 14,
+      "max": 120
+    },
+    "maxStake": {
+      "min": 0,
+      "max": 60000000000000
+    },
+    "maxUsers": 4
+  },
+	"suggestions": {
+		"delCo": {
+			"duration": 90,
+			"paymentAsa": "31566704",
+			"maxStakeBuffer": 20,
+			"maxStake": 100000000000
+		},
+		"valAd": {
+      "time": {
+        "validFor": 365,
+        "minDuration": 14,
+        "maxDuration": 120,
+        "setupTime": 15,
+        "confirmationTime": 24
+      },
+      "stake": {
+        "maxStake": 1000000,
+        "gratisStake": 20.00
+      },
+      "reqs": {
+        "idASA1": 0,
+        "amountASA1": 0,
+        "idASA2": 0,
+        "amountASA2": 0
+      },
+      "warn": {
+        "maxWarnings": 6,
+        "warnTime": 8
+      },
+      "config": {
+        "managerAddress": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ",
+        "maxUser": 4,
+        "acceptingNewUser": true
+      }
+		}
+	}
+}

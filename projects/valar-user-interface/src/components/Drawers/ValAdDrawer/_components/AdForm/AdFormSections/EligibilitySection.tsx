@@ -3,20 +3,9 @@ import ITooltip from "@/components/Tooltip/ITooltip";
 import { ToolTips } from "@/constants/tooltips";
 import { UseFormReturn } from "react-hook-form";
 
-import {
-  AdFormGroup,
-  AdFormInput,
-  AdFormLabel,
-  AdFormSection,
-} from "../AdFormBuilder";
+import { AdFormGroup, AdFormInput, AdFormLabel, AdFormSection } from "../AdFormBuilder";
 
-const EligibilitySection = ({
-  form,
-  disabled = false,
-}: {
-  form: UseFormReturn<any>;
-  disabled?: boolean;
-}) => {
+const EligibilitySection = ({ form, disabled = false }: { form: UseFormReturn<any>; disabled?: boolean }) => {
   return (
     <AdFormSection>
       <h1 className="text-sm">Eligibility Requirements</h1>
@@ -30,9 +19,7 @@ const EligibilitySection = ({
           </AdFormInput>
         </AdFormGroup>
         <AdFormGroup>
-          <AdFormLabel>
-            Amount
-          </AdFormLabel>
+          <AdFormLabel>Amount</AdFormLabel>
           <AdFormInput className="w-full">
             <FormInput form={form} name="amountASA1" disabled={disabled} />
           </AdFormInput>

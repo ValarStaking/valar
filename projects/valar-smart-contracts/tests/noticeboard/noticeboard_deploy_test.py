@@ -48,6 +48,7 @@ def test_action(
     # Check contract state
     gs_exp = NoticeboardGlobalState(
         pla_manager=action_account.address,
+        asset_config_manager=action_account.address,
         tc_sha256=bytes([0x00] * 32),
         noticeboard_fees=DEFAULT_NOTICEBOARD_FEES,
         noticeboard_terms_timing=DEFAULT_SETUP_NOTICEBOARD_TERMS_TIMING,

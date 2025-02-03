@@ -276,6 +276,7 @@ ERROR_FAIL_TO_REMOVE_DELEGATOR_CONTRACT_FROM_LIST = "Failed to remove delegator 
 ERROR_NO_MEMORY_FOR_MORE_DELEGATORS = "Validator ad does not have enough memory to store that many active delegators."
 # From Noticeboard
 ERROR_CALLED_BY_NOT_PLA_MANAGER_OR_CREATOR = "Can only be called by platform manager or creator."
+ERROR_CALLED_BY_NOT_PLA_MANAGER_OR_ASSET_CONFIG_MANAGER = "Can only be called by platform manager or asset config manager."  # noqa: E501
 ERROR_CALLED_FROM_STATE_RETIRED = "Cannot be called from state RETIRED."
 ERROR_NOT_STATE_DEPLOYED = "Cannot be called from other state than DEPLOYED."
 ERROR_NOT_STATE_SUSPENDED = "Cannot be called from other state than SUSPENDED."

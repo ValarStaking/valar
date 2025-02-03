@@ -75,7 +75,7 @@ class ValadAppWrapper(AppWrapper):
             algorand_client.client.algod,
             app_id=app_id
         )
-        # Fetch global state and populate corresponding atributes
+        # Fetch global state and populate corresponding attributes
         valad_global_state = self.update_dynamic(propagate_deleted_error=True)
         self.notbd_client = NoticeboardClient(
             algorand_client.client.algod,
@@ -166,8 +166,8 @@ class DelcoAppWrapper(AppWrapper):
         Delegator beneficiary address.
     fee_asa_id: int
         Asset ID for issuing payment.
-    gating_asa_id_list: List[Tupe(int, int)]
-        Garing asset IDs and their minimal values.
+    gating_asa_id_list: List[Tuple(int, int)]
+        Gating asset IDs and their minimal values.
     round_start: int
         Staking start (partkey validity).
     round_end: int
@@ -223,6 +223,20 @@ class DelcoAppWrapper(AppWrapper):
         self.partner_address = decode_delegation_terms_general(
             delco_global_state.delegation_terms_general.as_bytes
         ).partner_address
+
+    def get_partkey_params(self) -> dict:
+        """Get the basic participation key parameters for identifying a specific key.
+
+        Returns
+        -------
+        dict
+            Address, first round, and last round.
+        """
+        return {
+            'address': self.delben_address,
+            'vote-first-valid': self.round_start,
+            'vote-last-valid': self.round_end
+        }
 
     def update_dynamic(
             self,
@@ -489,3 +503,13 @@ class DelcoAppWrapperList(AppWrapperList):
             logger=logger,
             AppWrapperClass=DelcoAppWrapper
         )
+
+    def get_partkey_params_list(self) -> List[dict]:
+        """Get a list of participation keys.
+
+        Returns
+        -------
+        List[dict]
+            List of address, first round, and last round.
+        """
+        return [app.get_partkey_params() for app in self.app_list]

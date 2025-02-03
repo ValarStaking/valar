@@ -3,20 +3,9 @@ import ITooltip from "@/components/Tooltip/ITooltip";
 import { ToolTips } from "@/constants/tooltips";
 import { UseFormReturn } from "react-hook-form";
 
-import {
-  AdFormGroup,
-  AdFormInput,
-  AdFormLabel,
-  AdFormSection,
-} from "../AdFormBuilder";
+import { AdFormGroup, AdFormInput, AdFormLabel, AdFormSection } from "../AdFormBuilder";
 
-const OperationalConfigSection = ({
-  form,
-  disabled = false,
-}: {
-  form: UseFormReturn<any>;
-  disabled?: boolean;
-}) => {
+const OperationalConfigSection = ({ form, disabled = false }: { form: UseFormReturn<any>; disabled?: boolean }) => {
   return (
     <AdFormSection>
       <h1 className="text-sm">Operational Configuration</h1>
@@ -42,11 +31,7 @@ const OperationalConfigSection = ({
             Accepting new users <ITooltip value={ToolTips.AcceptingNewUsers} />
           </AdFormLabel>
           <div className="flex items-center gap-2">
-            <FormSwitch
-              form={form}
-              name="acceptingNewUser"
-              disabled={disabled}
-            />
+            <FormSwitch form={form} name="acceptingNewUser" disabled={disabled} />
             <AdFormLabel>Yes</AdFormLabel>
           </div>
         </AdFormGroup>

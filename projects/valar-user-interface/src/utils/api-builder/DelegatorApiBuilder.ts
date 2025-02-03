@@ -1,37 +1,43 @@
+import { abiDistributor } from "@/api/contract/galgo/abi-contracts";
+import { FolksFinance } from "@/api/contract/galgo/helpers";
+import { UserQuery } from "@/api/queries/user";
+import { noticeboardAppID } from "@/constants/platform";
+import {
+  ASA_ID_ALGO,
+  BOX_ASA_KEY_PREFIX,
+  BOX_DELEGATOR_CONTRACT_TEMPLATE_KEY,
+  BOX_PARTNERS_PREFIX,
+  BOX_SIZE_PER_REF,
+  FEE_OPT_IN_PERFORMANCE_TRACKING,
+  MBR_USER_BOX,
+  MBR_VALIDATOR_AD_DELEGATOR_CONTRACT_INCREASE,
+  ZERO_ADDRESS,
+  MAX_TXN_VALIDITY
+} from "@/constants/smart-contracts";
 import { DelegatorContractGlobalState } from "@/interfaces/contracts/DelegatorContract";
 import { NoticeboardGlobalState } from "@/interfaces/contracts/Noticeboard";
 import { PartnerInfo } from "@/interfaces/contracts/Partners";
 import { UserInfo } from "@/interfaces/contracts/User";
-import {
-  ValAdGlobalStateInterface,
-  ValidatorAdGlobalState,
-} from "@/interfaces/contracts/ValidatorAd";
-import { noticeboardAppID } from "@/constants/platform";
+import { ValAdGlobalStateInterface, ValidatorAdGlobalState } from "@/interfaces/contracts/ValidatorAd";
+import { User } from "@/store/userStore";
 import { AlgorandClient, microAlgos } from "@algorandfoundation/algokit-utils";
 import { BoxReference } from "@algorandfoundation/algokit-utils/types/app";
 import {
   ABIAddressType,
+  AtomicTransactionComposer,
   bigIntToBytes,
+  encodeAddress,
   getApplicationAddress,
+  getMethodByName,
   makeKeyRegistrationTxnWithSuggestedParamsFromObject,
   Transaction,
   TransactionSigner,
 } from "algosdk";
 
 import { BoxUtils } from "../contract/box-utils";
-import {
-  calculateFeeRound,
-  calculateFeesPartner,
-  calculateOperationalFee,
-} from "../contract/helpers";
-import { TxnParams } from "../txn-params";
-import { KeyRegParams } from "@/lib/types";
-import { bytesToStr } from "../convert";
+import { calculateFeeRound, calculateFeesPartner, calculateOperationalFee } from "../contract/helpers";
 import { ParamsCache } from "../paramsCache";
-import { User } from "@/store/userStore";
-import { ASA_ID_ALGO, FEE_OPT_IN_PERFORMANCE_TRACKING, MBR_USER_BOX, MBR_VALIDATOR_AD_DELEGATOR_CONTRACT_INCREASE, ZERO_ADDRESS } from "@/constants/smart-contracts";
-import { BOX_ASA_KEY_PREFIX, BOX_DELEGATOR_CONTRACT_TEMPLATE_KEY, BOX_PARTNERS_PREFIX, BOX_SIZE_PER_REF } from "@/constants/smart-contracts";
-
+import { TxnParams } from "../txn-params";
 export class DelegatorApiBuilder {
   /**
    * ================================
@@ -62,7 +68,6 @@ export class DelegatorApiBuilder {
     delBeneficiary: string;
     signer: TransactionSigner;
   }) {
-
     const valAssetId = gsValidatorAd.termsPrice.feeAssetId;
     const valAppId = gsValidatorAd.appId;
 
@@ -71,11 +76,11 @@ export class DelegatorApiBuilder {
       .filter((asaReg) => asaReg[0] != ASA_ID_ALGO)
       .map((asaReg) => Number(asaReg[0]));
     if (valAssetId != ASA_ID_ALGO) {
-      foreignAssets.push( Number(valAssetId) );
+      foreignAssets.push(Number(valAssetId));
     }
 
     //Foreign Accounts
-    const foreignAccounts = [delBeneficiary]
+    const foreignAccounts = [delBeneficiary];
 
     const foreignApps = [Number(valAppId)];
 
@@ -87,13 +92,13 @@ export class DelegatorApiBuilder {
 
     //MBR Calculation
     const mbrAmount =
-      Number(gsNoticeBoard.noticeboardFees.delContractCreation) +
-      MBR_VALIDATOR_AD_DELEGATOR_CONTRACT_INCREASE;
+      Number(gsNoticeBoard.noticeboardFees.delContractCreation) + MBR_VALIDATOR_AD_DELEGATOR_CONTRACT_INCREASE;
 
     const mbrTxn = await algorandClient.transactions.payment({
       sender: userAddress,
       receiver: noticeboardAddress,
       amount: microAlgos(mbrAmount),
+      validityWindow: MAX_TXN_VALIDITY,
       signer,
     });
 
@@ -107,7 +112,7 @@ export class DelegatorApiBuilder {
 
     let partnerAmount = 0n;
     let partnerAddress = ZERO_ADDRESS;
-    if(partner){
+    if (partner) {
       partnerAddress = partner.address;
       const partnerCommission = partner.partnerCommission;
       const [feeSetupPartner, feeRoundPartner] = calculateFeesPartner(partnerCommission, feeSetup, feeRound);
@@ -123,6 +128,7 @@ export class DelegatorApiBuilder {
         sender: userAddress,
         receiver: noticeboardAddress,
         amount: BigInt(feeAmount),
+        validityWindow: MAX_TXN_VALIDITY,
         signer,
       });
     } else {
@@ -130,17 +136,14 @@ export class DelegatorApiBuilder {
         sender: userAddress,
         receiver: noticeboardAddress,
         amount: microAlgos(Number(feeAmount)),
+        validityWindow: MAX_TXN_VALIDITY,
         signer,
       });
     }
 
     //BoxesDel
     const boxDel = (
-      await BoxUtils.getAppBox(
-        algorandClient.client.algod,
-        Number(valAppId),
-        BOX_DELEGATOR_CONTRACT_TEMPLATE_KEY,
-      )
+      await BoxUtils.getAppBox(algorandClient.client.algod, Number(valAppId), BOX_DELEGATOR_CONTRACT_TEMPLATE_KEY)
     ).value;
     const boxDelSize = boxDel.length;
     const numLoadVal = Math.ceil(boxDelSize / BOX_SIZE_PER_REF);
@@ -156,10 +159,7 @@ export class DelegatorApiBuilder {
     const boxesPartner: BoxReference[] = [
       {
         appId: 0,
-        name: new Uint8Array([
-          ...BOX_PARTNERS_PREFIX,
-          ...new ABIAddressType().encode(partnerAddress),
-        ]),
+        name: new Uint8Array([...BOX_PARTNERS_PREFIX, ...new ABIAddressType().encode(partnerAddress)]),
       },
     ];
 
@@ -228,10 +228,7 @@ export class DelegatorApiBuilder {
       boxesAsset = [
         {
           appId: valAppId,
-          name: new Uint8Array([
-            ...BOX_ASA_KEY_PREFIX,
-            ...bigIntToBytes(assetId, 8),
-          ]),
+          name: new Uint8Array([...BOX_ASA_KEY_PREFIX, ...bigIntToBytes(assetId, 8)]),
         },
       ];
     }
@@ -318,30 +315,28 @@ export class DelegatorApiBuilder {
     algorandClient,
     gsDelCo,
     gsValAd,
-    userAddress,
-    delUserInfo,
-    delKeyRegParams,
+    user,
+    signer,
   }: {
     algorandClient: AlgorandClient;
     gsDelCo: DelegatorContractGlobalState;
     gsValAd: ValidatorAdGlobalState;
-    userAddress: string;
-    delUserInfo: UserInfo;
-    delKeyRegParams: KeyRegParams | undefined;
+    user: User;
+    signer: TransactionSigner;
   }) {
     const valAppId = gsDelCo.validatorAdAppId;
     const delAppId = gsDelCo.appId;
 
     const valOwner = gsValAd.valOwner;
 
-    const delManager = userAddress;
+    const delManager = user.address;
     const boxesDelManager = BoxUtils.createBoxes(0, [delManager]);
     const boxesValOwner = BoxUtils.createBoxes(0, [valOwner]);
 
     // Get validator owner user info
     const valUserInfo = await UserInfo.getUserInfo(algorandClient.client.algod, valOwner);
     const valAppIdx = valUserInfo!.getAppIndex(valAppId);
-    const delAppIdx = delUserInfo.getAppIndex(delAppId);
+    const delAppIdx = user.userInfo!.getAppIndex(delAppId);
 
     const assetId = gsDelCo.delegationTermsGeneral.feeAssetId;
 
@@ -353,10 +348,7 @@ export class DelegatorApiBuilder {
       boxesAsset = [
         {
           appId: Number(valAppId),
-          name: new Uint8Array([
-            ...BOX_ASA_KEY_PREFIX,
-            ...bigIntToBytes(assetId, 8),
-          ]),
+          name: new Uint8Array([...BOX_ASA_KEY_PREFIX, ...bigIntToBytes(assetId, 8)]),
         },
       ];
     }
@@ -364,16 +356,47 @@ export class DelegatorApiBuilder {
     const partnerAddress = gsDelCo.delegationTermsGeneral.partnerAddress;
     const foreignAccounts = [partnerAddress];
 
-    const txnParams = await TxnParams.setTxnFees(6, true);
+    const beneficiary = await UserQuery.getAccountInfo(algorandClient.client.algod, gsDelCo.delBeneficiary);
 
-    let txnKeyDeReg = undefined;
-    if(delKeyRegParams && (bytesToStr(gsDelCo.voteKey) === bytesToStr(delKeyRegParams.voteKey))){
-      // Create key deregistration transaction if keys are still active
-      txnKeyDeReg = makeKeyRegistrationTxnWithSuggestedParamsFromObject({
-        from: userAddress,
-        suggestedParams: await ParamsCache.getSuggestedParams(),
+    const atc = new AtomicTransactionComposer();
+    let txns: Transaction[] = [];
+    let addedTxn = 0;
+    // Create key deregistration transaction if keys are still active, i.e. signed
+    const keysStillActive = UserQuery.keysDelCoSigned(beneficiary, gsDelCo);
+    if (keysStillActive) {
+      // Check if beneficiary is galgo escrow
+      if (user.galgo !== null && user.galgo.address === beneficiary.address) {
+        const sp = await TxnParams.setTxnFees(0, true);
+
+        addedTxn = 2;
+
+        atc.addMethodCall({
+          sender: user.address,
+          signer,
+          appID: FolksFinance.appId,
+          method: getMethodByName(abiDistributor.methods, "register_offline"),
+          methodArgs: [beneficiary.address],
+          suggestedParams: sp,
+        });
+      } else {
+        const txnKeyDeReg = makeKeyRegistrationTxnWithSuggestedParamsFromObject({
+          from: beneficiary.address,
+          suggestedParams: await ParamsCache.getSuggestedParams(),
+        });
+
+        atc.addTransaction({
+          txn: txnKeyDeReg,
+          signer,
+        });
+      }
+
+      txns = atc.buildGroup().map(({ txn }) => {
+        txn.group = undefined;
+        return txn;
       });
     }
+
+    const txnParams = await TxnParams.setTxnFees(6 + addedTxn, true);
 
     return {
       delAppId,
@@ -383,12 +406,8 @@ export class DelegatorApiBuilder {
       valOwner,
       foreignAssets,
       foreignAccounts,
-      txnKeyDeReg,
-      boxesContractWithdraw: [
-        ...boxesDelManager,
-        ...boxesValOwner,
-        ...boxesAsset,
-      ],
+      txns,
+      boxesContractWithdraw: [...boxesDelManager, ...boxesValOwner, ...boxesAsset],
       txnParams,
     };
   }
@@ -403,14 +422,12 @@ export class DelegatorApiBuilder {
     algorandClient,
     gsValAd,
     gsDelCo,
-    userAddress,
     user,
     signer,
   }: {
     algorandClient: AlgorandClient;
     gsValAd: ValidatorAdGlobalState;
     gsDelCo: DelegatorContractGlobalState;
-    userAddress: string;
     user: User;
     signer: TransactionSigner;
   }) {
@@ -418,7 +435,7 @@ export class DelegatorApiBuilder {
     const delAppId = gsDelCo.appId;
 
     const valOwner = gsValAd.valOwner;
-    const delManager = userAddress;
+    const delManager = user.address;
     const boxesDelManager = BoxUtils.createBoxes(0, [delManager]);
     const boxesValOwner = BoxUtils.createBoxes(0, [valOwner]);
 
@@ -427,25 +444,79 @@ export class DelegatorApiBuilder {
     const valAppIdx = valUserInfo!.getAppIndex(valAppId);
     const delAppIdx = user.userInfo!.getAppIndex(delAppId);
 
-    let keyRegFee = FEE_OPT_IN_PERFORMANCE_TRACKING;
+    // Define keyreg transaction
+    const atc = new AtomicTransactionComposer();
     let addedTxn = 0;
-    if(user.trackedPerformance){
-      keyRegFee = 0;
-      addedTxn = 1;
+
+    const beneficiary = await UserQuery.getAccountInfo(algorandClient.client.algod, gsDelCo.delBeneficiary);
+
+    // If beneficiary has already signed the correct keys and is tracked in consensus, skip keyReg
+    if (!UserQuery.keysDelCoSignedAndTracked(beneficiary, gsDelCo)) {
+      let keyRegFee = FEE_OPT_IN_PERFORMANCE_TRACKING;
+      if (beneficiary.trackedPerformance) {
+        keyRegFee = 0;
+        addedTxn = 1;
+      }
+
+      // Check if beneficiary is galgo escrow
+      if (user.galgo !== null && user.galgo.address === beneficiary.address) {
+        const sp = await TxnParams.setTxnFees(0, true);
+        addedTxn = 3;
+
+        const feeKeyReg = {
+          txn: await algorandClient.transactions.payment({
+            sender: user.address,
+            receiver: user.galgo.address,
+            amount: microAlgos(keyRegFee),
+            validityWindow: MAX_TXN_VALIDITY,
+            signer,
+          }),
+          signer,
+        };
+
+        atc.addMethodCall({
+          sender: user.address,
+          signer,
+          appID: FolksFinance.appId,
+          method: getMethodByName(abiDistributor.methods, "register_online"),
+          methodArgs: [
+            feeKeyReg,
+            user.galgo.address,
+            encodeAddress(gsDelCo.voteKey),
+            encodeAddress(gsDelCo.selKey),
+            gsDelCo.stateProofKey,
+            gsDelCo.roundStart,
+            gsDelCo.roundEnd,
+            gsDelCo.voteKeyDilution,
+          ],
+          suggestedParams: sp,
+        });
+      } else {
+        const txnKeyReg = await algorandClient.transactions.onlineKeyRegistration({
+          sender: gsDelCo.delBeneficiary,
+          voteKey: gsDelCo.voteKey,
+          selectionKey: gsDelCo.selKey,
+          voteFirst: gsDelCo.roundStart,
+          voteLast: gsDelCo.roundEnd,
+          voteKeyDilution: gsDelCo.voteKeyDilution,
+          stateProofKey: gsDelCo.stateProofKey,
+          staticFee: microAlgos(keyRegFee),
+          validityWindow: MAX_TXN_VALIDITY,
+          signer,
+        });
+
+        atc.addTransaction({
+          txn: txnKeyReg,
+          signer,
+        });
+      }
     }
 
     const txnParams = await TxnParams.setTxnFees(3 + addedTxn, true);
 
-    const txnKeyReg = await algorandClient.transactions.onlineKeyRegistration({
-      sender: gsDelCo.delBeneficiary,
-      voteKey: gsDelCo.voteKey,
-      selectionKey: gsDelCo.selKey,
-      voteFirst: gsDelCo.roundStart,
-      voteLast: gsDelCo.roundEnd,
-      voteKeyDilution: gsDelCo.voteKeyDilution,
-      stateProofKey: gsDelCo.stateProofKey,
-      staticFee: microAlgos(keyRegFee),
-      signer,
+    const txns = atc.buildGroup().map(({ txn }) => {
+      txn.group = undefined;
+      return txn;
     });
 
     return {
@@ -454,7 +525,7 @@ export class DelegatorApiBuilder {
       delAppIdx,
       valAppIdx,
       valOwner,
-      txnKeyReg,
+      txns,
       boxesKeysConfirm: [...boxesValOwner, ...boxesDelManager],
       txnParams,
     };
@@ -498,6 +569,7 @@ export class DelegatorApiBuilder {
       sender: userAddress,
       receiver: noticeboardAddress,
       amount: microAlgos(amountUserCreate),
+      validityWindow: MAX_TXN_VALIDITY,
       signer,
     });
 
@@ -515,11 +587,11 @@ export class DelegatorApiBuilder {
       .filter((asaReg) => asaReg[0] != ASA_ID_ALGO)
       .map((asaReg) => Number(asaReg[0]));
     if (valAssetId != ASA_ID_ALGO) {
-      foreignAssets.push( Number(valAssetId) );
+      foreignAssets.push(Number(valAssetId));
     }
 
     //Foreign Accounts
-    const foreignAccounts = [delBeneficiary]
+    const foreignAccounts = [delBeneficiary];
 
     const foreignApps = [Number(valAppId)];
 
@@ -529,13 +601,13 @@ export class DelegatorApiBuilder {
 
     //MBR Calculation
     const mbrAmount =
-      Number(gsNoticeBoard.noticeboardFees.delContractCreation) +
-      MBR_VALIDATOR_AD_DELEGATOR_CONTRACT_INCREASE;
+      Number(gsNoticeBoard.noticeboardFees.delContractCreation) + MBR_VALIDATOR_AD_DELEGATOR_CONTRACT_INCREASE;
 
     const mbrTxn = await algorandClient.transactions.payment({
       sender: userAddress,
       receiver: noticeboardAddress,
       amount: microAlgos(mbrAmount),
+      validityWindow: MAX_TXN_VALIDITY,
       signer,
     });
 
@@ -549,7 +621,7 @@ export class DelegatorApiBuilder {
 
     let partnerAmount = 0n;
     let partnerAddress = ZERO_ADDRESS;
-    if(partner){
+    if (partner) {
       partnerAddress = partner.address;
       const partnerCommission = partner.partnerCommission;
       const [feeSetupPartner, feeRoundPartner] = calculateFeesPartner(partnerCommission, feeSetup, feeRound);
@@ -565,6 +637,7 @@ export class DelegatorApiBuilder {
         sender: userAddress,
         receiver: noticeboardAddress,
         amount: BigInt(feeAmount),
+        validityWindow: MAX_TXN_VALIDITY,
         signer,
       });
     } else {
@@ -572,17 +645,14 @@ export class DelegatorApiBuilder {
         sender: userAddress,
         receiver: noticeboardAddress,
         amount: microAlgos(Number(feeAmount)),
+        validityWindow: MAX_TXN_VALIDITY,
         signer,
       });
     }
 
     //BoxesDel
     const boxDel = (
-      await BoxUtils.getAppBox(
-        algorandClient.client.algod,
-        Number(valAppId),
-        BOX_DELEGATOR_CONTRACT_TEMPLATE_KEY,
-      )
+      await BoxUtils.getAppBox(algorandClient.client.algod, Number(valAppId), BOX_DELEGATOR_CONTRACT_TEMPLATE_KEY)
     ).value;
     const boxDelSize = boxDel.length;
     const numLoadVal = Math.ceil(boxDelSize / BOX_SIZE_PER_REF);
@@ -597,19 +667,16 @@ export class DelegatorApiBuilder {
     const boxesPartner: BoxReference[] = [
       {
         appId: 0,
-        name: new Uint8Array([
-          ...BOX_PARTNERS_PREFIX,
-          ...new ABIAddressType().encode(partnerAddress),
-        ]),
+        name: new Uint8Array([...BOX_PARTNERS_PREFIX, ...new ABIAddressType().encode(partnerAddress)]),
       },
     ];
 
     // Get validator owner user info
     const valUserInfo = await UserInfo.getUserInfo(algorandClient.client.algod, valOwner);
     const valAppIdx = valUserInfo!.getAppIndex(valAppId);
-    const delAppIdx = 0n;  // First contract because new user
+    const delAppIdx = 0n; // First contract because new user
 
-    const txnParams = await TxnParams.setTxnFees(10+1, true);
+    const txnParams = await TxnParams.setTxnFees(10 + 1, true);
 
     return {
       tcSha256,
@@ -630,5 +697,4 @@ export class DelegatorApiBuilder {
       feeTxn,
     };
   }
-
 }

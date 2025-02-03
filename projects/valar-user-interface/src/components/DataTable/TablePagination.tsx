@@ -31,18 +31,12 @@ const TablePagination = ({
       </div>
       <div className="flex gap-2">
         <ChevronLeft
-          className={cn(
-            "cursor-pointer",
-            !table.getCanPreviousPage() && "opacity-50",
-          )}
-          onClick={() => table.getCanPreviousPage()  && table.previousPage()}
+          className={cn("cursor-pointer", !table.getCanPreviousPage() && "opacity-50")}
+          onClick={() => table.getCanPreviousPage() && table.previousPage()}
         />
 
         <ChevronRight
-          className={cn(
-            "cursor-pointer",
-            !table.getCanNextPage() && "opacity-50",
-          )}
+          className={cn("cursor-pointer", !table.getCanNextPage() && "opacity-50")}
           onClick={() => table.getCanNextPage() && table.nextPage()}
         />
       </div>

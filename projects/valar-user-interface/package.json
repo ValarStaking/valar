@@ -1,7 +1,7 @@
 {
   "name": "valar-ui",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.2",
   "type": "module",
   "scripts": {
     "generate:app-clients": "algokit project link --all",
@@ -35,6 +35,8 @@
     "@tanstack/react-table": "^8.20.5",
     "@txnlab/use-wallet-react": "^3.10.0",
     "algosdk": "^2.7.0",
+    "axios": "^1.7.9",
+    "axios-cache-interceptor": "^1.6.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",

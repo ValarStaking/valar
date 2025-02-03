@@ -17,7 +17,8 @@ const config = getPlatformConfig();
  * -----------------------------------
  * -----------------------------------
  */
-export const noticeboardAppID = config.noticeboardAppID;
+const envAppId = Number(import.meta.env.VITE_NOTICEBOARD_APP_ID);
+export const noticeboardAppID = (!envAppId || envAppId === 0) ? config.noticeboardAppID : envAppId;
 
 /**
  * -----------------------------------
@@ -46,6 +47,7 @@ export const CURRENCIES_OPTIONS = Array.from(CURRENCIES.entries())
  */
 export const LIMITS_DURATION = config.limits.duration;
 export const LIMITS_MAX_STAKE = config.limits.maxStake;
+export const LIMIT_MAX_USERS = config.limits.maxUsers;
 
 /**
  * -----------------------------------
@@ -57,7 +59,7 @@ export const LIMITS_MAX_STAKE = config.limits.maxStake;
 export const SUGGESTED_DURATION = config.suggestions.delCo.duration; // [days] Default suggest duration
 export const PAYMENT_ASA: bigint = BigInt(config.suggestions.delCo.paymentAsa); // Default suggest currency
 export const SUGGESTED_MAX_STAKE_BUFFER = config.suggestions.delCo.maxStakeBuffer; // [%] Suggest user a max stake this much % above current stake
-export const DEFAULT_MAX_STAKE = BigInt(config.suggestions.delCo.maxStake); // [uALGO] - in case no wallet is connected
+export const DEFAULT_MAX_STAKE: bigint = BigInt(config.suggestions.delCo.maxStake); // [uALGO] - in case no wallet is connected
 
 /**
  * -----------------------------------

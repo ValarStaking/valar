@@ -1,4 +1,3 @@
-
 export function DateToFormDisplay(
   date: Date,
 ): string {

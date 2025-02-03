@@ -1,6 +1,12 @@
 {
-  "noticeboardAppID": 1024,
-  "tc": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
+  "noticeboardAppID": 1027,
+  "tc": "09f2ea6a4af76a9770125165865fd03d831df6b94850ac07fe657a827ef37cf9",
+  "algoRewards": {
+    "startRound": 0,
+    "startReward": 10000000,
+    "decayRounds": 1000000,
+    "decayRate": 1
+  },
 	"currencies": {
 	  "1002": {
 	    "allowed": true,
@@ -45,7 +51,8 @@
     "maxStake": {
       "min": 0,
       "max": 60000000
-    }
+    },
+    "maxUsers": 4
   },
 	"suggestions": {
 		"delCo": {

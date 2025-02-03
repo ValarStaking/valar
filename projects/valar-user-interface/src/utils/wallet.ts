@@ -21,6 +21,10 @@ if (import.meta.env.VITE_ALGOD_NETWORK === 'localnet') {
     },
     { id: WalletId.LUTE, options: { siteName } },
   ]
+} else if (import.meta.env.VITE_ALGOD_NETWORK === 'fnet') {
+  wallets = [
+    { id: WalletId.LUTE, options: { siteName } },
+  ]
 } else {
   wallets = [
     WalletId.DEFLY,

@@ -1,4 +1,4 @@
-import { BOX_PARTNERS_PREFIX } from '@/constants/platform'
+import { BOX_PARTNERS_PREFIX } from '@/constants/smart-contracts'
 import { BoxExistsResponse, BoxUtils } from '@/utils/contract/box-utils'
 import { ABIAddressType, ABITupleType, ABIUintType } from 'algosdk'
 import AlgodClient from 'algosdk/dist/types/client/v2/algod/algod'

@@ -27,7 +27,7 @@ const MaxSettingsPopup = ({
 
   useEffect(() => {
     if(user){
-      setSelectedMaxStake(Number(algoBigIntToDisplay(getSuggestedMaxStake(user.algo), "floor")));
+      setSelectedMaxStake(Number(algoBigIntToDisplay(getSuggestedMaxStake(user.beneficiary.algo), "floor")));
     } else {
       setSelectedMaxStake(Number(algoBigIntToDisplay(DEFAULT_MAX_STAKE,"ceil")));
     }
@@ -53,12 +53,11 @@ const MaxSettingsPopup = ({
               value={selectedMaxStake}
               onChange={ (e: React.ChangeEvent<HTMLInputElement>) => {
                 let selected = Number(e.target.value);
-                if(user && selected < Number(algoBigIntToDisplay(user!.algo, "ceil"))) selected = Number(algoBigIntToDisplay(user!.algo, "ceil"));
+                if(user && selected < Number(algoBigIntToDisplay(user!.beneficiary.algo, "ceil"))) selected = Number(algoBigIntToDisplay(user!.beneficiary.algo, "ceil"));
                 const isInteger = Math.abs(selected % 1) === 0;
                 if(!isInteger) selected = Math.ceil(selected);
                 if(selected > LIMITS_MAX_STAKE.max) selected = Math.floor(LIMITS_MAX_STAKE.max);
                 if(selected < 0) selected = 0;
-                // TO DO: Add displaying of error messages
                 setSelectedMaxStake(selected);
               }}
             />
@@ -67,7 +66,7 @@ const MaxSettingsPopup = ({
               className="text-text-tertiary hover:text-text"
               onClick={ () => {
                 if(user){
-                  setSelectedMaxStake(Number(algoBigIntToDisplay(getSuggestedMaxStake(user.algo),"floor")));
+                  setSelectedMaxStake(Number(algoBigIntToDisplay(getSuggestedMaxStake(user.beneficiary.algo),"floor")));
                 } else {
                   setSelectedMaxStake(Number(algoBigIntToDisplay(DEFAULT_MAX_STAKE,"ceil")));
                 }
@@ -79,7 +78,7 @@ const MaxSettingsPopup = ({
           {user && (
             <div className="mt-2 flex gap-1 text-xs">
               <div>Your stake:</div>
-              <div>{algoBigIntToDisplay(user.algo,"floor") + " ALGO"}</div>
+              <div>{algoBigIntToDisplay(user.beneficiary.algo,"floor") + " ALGO"}</div>
             </div>
           )}
           <DialogClose className="mt-6 flex w-full gap-2">

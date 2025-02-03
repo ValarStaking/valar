@@ -1,16 +1,12 @@
 import { ValTermsGating, ValTermsPricing, ValTermsStakeLimits, ValTermsTiming, ValTermsWarnings, ValidatorAdGlobalState } from "@/interfaces/contracts/ValidatorAd"
-import { AdFormValues, AssetAmountUnit, AssetDisplay, DelCoStatus, StakeReqs, TimeDisplay, TimeUnit, ValAdStatus } from "@/lib/types"
+import { AdFormValues, AssetAmountUnit, AssetDisplay, DelCoStatus, TimeDisplay, TimeUnit, ValAdStatus } from "@/lib/types"
 import { CURRENCIES } from "../constants/platform"
 import { adFormSchema } from "@/lib/form-schema"
 import { z } from "zod"
 import { NoticeboardGlobalState } from "@/interfaces/contracts/Noticeboard"
-import { calculateNodeRunnerFee } from "./contract/helpers"
-import { User } from "@/store/userStore"
 import { DC_STATE_ENDED_CANNOT_PAY, DC_STATE_ENDED_EXPIRED, DC_STATE_ENDED_LIMITS, DC_STATE_ENDED_NOT_CONFIRMED, DC_STATE_ENDED_NOT_SUBMITTED, DC_STATE_ENDED_SUSPENDED, DC_STATE_ENDED_WITHDREW, DC_STATE_LIVE, DC_STATE_READY, DC_STATE_SUBMITTED, VA_STATE_CREATED, VA_STATE_NOT_LIVE, VA_STATE_NOT_READY, VA_STATE_READY } from "@/constants/states"
 import { AssetParams, DAYS_IN_MONTH, FROM_BASE_TO_MILLI_MULTIPLIER, FROM_MILLI_TO_NANO_MULTIPLIER, HOURS_IN_DAY, MINUTES_IN_HOUR, ONE_IN_PPM, SECONDS_IN_MINUTE, TimeParams } from "@/constants/units"
-import { ALGORAND_REWARDS, ROLE_DEL_STR } from "@/constants/smart-contracts"
-import { ASSUMED_BLOCK_TIME, BLOCKS_PER_MONTH, BLOCKS_PER_YEAR } from "@/constants/timing"
-import { TC_LATEST } from "@/constants/terms-and-conditions"
+import { ASSUMED_BLOCK_TIME, BLOCKS_PER_MONTH} from "@/constants/timing"
 import { ParamsCache } from "./paramsCache"
 import { DateToFormDisplay } from "@/lib/utils"
 
@@ -69,7 +65,7 @@ export function hexToBytes(hex: string): Uint8Array {
   return byteArray;
 }
 
-export function decodeDelCoState(state: Uint8Array): {status: DelCoStatus, extStatusText?: string} {
+export function decodeDelCoStateToString(state: Uint8Array): {status: DelCoStatus, extStatusText?: string} {
   // Decode delegator contract status
   let status: DelCoStatus = "LIVE";
   let extStatusText = undefined;
@@ -106,7 +102,7 @@ export function decodeDelCoState(state: Uint8Array): {status: DelCoStatus, extSt
   return {status, extStatusText};
 }
 
-export function decodeValAdState(state: Uint8Array): ValAdStatus{
+export function decodeValAdStateToString(state: Uint8Array): ValAdStatus{
   // Decode validator ad status
   let status: ValAdStatus = "CREATED"
   if(bytesToStr(state) === bytesToStr(VA_STATE_CREATED)){
@@ -178,7 +174,7 @@ export async function formToTermsAndConfig(
       },
       termsWarn: {
         cntWarningMax: BigInt(formValues.maxWarnings),
-        roundsWarning: durationToRounds(formValues.maxDuration, TimeParams.warn.unit),
+        roundsWarning: durationToRounds(formValues.warnTime, TimeParams.warn.unit),
       },
     },
     config: {
@@ -393,7 +389,7 @@ export function algoDisplayToBigInt(
 
 export function algoBigIntToDisplay(
   amount: bigint,
-  round: "ceil" | "floor" | "none" | "raw", 
+  round: "ceil" | "floor" | "none" | "raw",
   wUnit?: boolean,
   decimals?: number,
 ): string {
@@ -412,14 +408,16 @@ export function algoBigIntToDisplay(
       value = Math.ceil(value);
     } else if(round === "floor"){
       value = Math.floor(value);
-    } else {
-      if(decimals){
-        value = Number(value.toFixed(decimals));
-      }
     }
   }
-  
-  const display = value.toString() + (wUnit ? " " + unit : "");
+
+  let display = "";
+  if(decimals && round !== "raw"){
+    display = value.toFixed(decimals);
+  } else {
+    display = value.toString();
+  }
+  display += (wUnit ? " " + unit : "");
 
   return display;
 }
@@ -442,74 +440,19 @@ export function gratisBigIntToNumber(
   return value;
 }
 
-export function canStake(
-  gsValAd: ValidatorAdGlobalState,
-  user: User | null,
-  stakeReqs: StakeReqs,
-): boolean {
-
-  // Check if user is passing gating requirement
-  const gatingPassed = gsValAd.termsReqs.gatingAsaList.every(([assetId, requiredAmount]) => {
-    if (assetId !== 0n && user) {
-      return (user.assets.get(assetId) || 0n) > requiredAmount;
-    } else {
-      return true;
-    }
-  });
-  // FOR FUTURE: Add different messaging to right side (i.e. replace <SignContractCard>) depending on this possibilities
-  const possible = (
-    // Check user or its role is either undefined or is delegator
-    (!user || (user !== null && (user.userInfo === undefined || (bytesToStr(user.userInfo.role) === ROLE_DEL_STR)))) &&
-    gsValAd.termsPrice.feeAssetId === stakeReqs.currency &&
-    // Check Timings
-    gsValAd.termsTime.roundsDurationMin <= stakeReqs.duration &&
-    gsValAd.termsTime.roundsDurationMax >= stakeReqs.duration &&
-    (gsValAd.termsTime.roundMaxEnd >= (stakeReqs.duration + 0n)) &&
-    // Check max stake
-    gsValAd.termsStake.stakeMax >= stakeReqs.maxStake &&
-    // Check balance
-    (!user || (gsValAd.termsStake.stakeMax >= user.algo)) &&
-    // Check eligibility
-    gatingPassed &&
-    // Check if the user can pay for the service
-    (!user || ((user.assets.get(gsValAd.termsPrice.feeAssetId) || 0n) > calculateNodeRunnerFee(stakeReqs, gsValAd))) &&
-    // Check occupation
-    gsValAd.cntDel < gsValAd.cntDelMax &&
-    // Check state
-    bytesToStr(gsValAd.state) === bytesToStr(VA_STATE_READY) &&
-    // Check terms
-    bytesToHex(gsValAd.tcSha256) === TC_LATEST
-  )
-
-  return possible;
-}
 
 export function ellipseAddress(address = ``, width = 6): string {
   return address ? `${address.slice(0, width)}...${address.slice(-width)}` : address
 }
 
-export function estimateRateForRounds(
-  currentRound: bigint,
-  stakeOnline: bigint,
-  rounds: bigint,
-): number {
+export const timeFormatter = (seconds: number) => {
+  const hrs = Math.floor(seconds / 3600);
+  const min = Math.floor((seconds % 3600) / 60);
+  const sec = seconds % 60;
 
-  const getRewardAtRound = (round: bigint) => {
-    return ALGORAND_REWARDS.startReward * (1 - Math.floor(Number(round-ALGORAND_REWARDS.startRound) / ALGORAND_REWARDS.decayRounds)*ALGORAND_REWARDS.decayRate/100);
+  if (hrs > 0) {
+    return `${String(hrs).padStart(2, "0")}:${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   }
 
-  const currentReward = getRewardAtRound(currentRound);
-  const endReward = getRewardAtRound(currentRound + rounds);
-  const averageReward = (currentReward + endReward) / 2;
-
-  const returnRate = Number(rounds) * averageReward / Number(stakeOnline) * 100;
-
-  return returnRate;
-}
-
-export function estimateAPY(
-  currentRound: bigint,
-  stakeOnline: bigint,
-): number {
-  return estimateRateForRounds(currentRound, stakeOnline, BigInt(Math.floor(BLOCKS_PER_YEAR)));
-}
+  return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+};

@@ -122,3 +122,4 @@ export type KeyRegParams = {
   voteKeyDilution: bigint;
   stateProofKey: Uint8Array;
 }
+

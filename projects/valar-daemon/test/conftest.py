@@ -1,7 +1,7 @@
 """Default conftest for the Valar Daemon.
 """
 import os
-import sys
+# import sys
 import time
 import pytest
 import pytest
@@ -15,7 +15,7 @@ from algokit_utils.beta.algorand_client import AlgorandClient
 from algokit_utils.beta.account_manager import AddressAndSigner
 
 from valar_daemon.Logger import Logger
-from valar_daemon.constants import ALGO_ASA_ID, VALAD_STATE_NOT_READY, VALAD_STATE_READY
+from valar_daemon.constants import ALGO_ASA_ID, VALAD_STATE_NOT_READY
 from valar_daemon.AppWrapper import ValadAppWrapper
 from valar_daemon.NoticeboardClient import NoticeboardClient
 
@@ -26,9 +26,10 @@ from .utils import (
     translate_valad_state_to_noticeboard_util_class_action
 )
 
-sys.path.insert(0, str(Path(*Path(__file__).parent.parts[:-2], 'valar-smart-contracts')))
-from tests.noticeboard.utils import Noticeboard, create_and_fund_account # type: ignore
-from tests.noticeboard.config import ActionInputs, DelegationTermsBalance # type: ignore
+# sys.path.insert(0, str(Path(*Path(__file__).parent.parts[:-2], 'valar-smart-contracts')))
+from tests.utils import create_and_fund_account
+from tests.noticeboard.utils import Noticeboard
+from tests.noticeboard.config import ActionInputs
 
 
 def pytest_configure(config: Config): # Do not rename - `pytest_configure` is a hook
@@ -288,6 +289,7 @@ def noticeboard(
     valman = create_and_fund_account(algorand_client, dispenser, [0])
     valown = create_and_fund_account(algorand_client, dispenser, [0])
     partner = create_and_fund_account(algorand_client, dispenser, [0])
+    asset_config_manager = create_and_fund_account(algorand_client, dispenser, [0])
     # Initialize noticeboard client
     noticeboard_client = NoticeboardClient(
         algorand_client.client.algod,
@@ -295,7 +297,7 @@ def noticeboard(
         signer=creator.signer,
         indexer_client=algorand_client.client.indexer,
     )
-    # Make class for settin states
+    # Make class for setting states
     noticeboard = Noticeboard(
         noticeboard_client=noticeboard_client,
         algorand_client=algorand_client,
@@ -307,7 +309,8 @@ def noticeboard(
         del_beneficiaries=[delben],
         val_managers=[valman],
         val_owners=[valown],
-        partners=[partner]
+        partners=[partner],
+        asset_config_manager=asset_config_manager
     )
     noticeboard.initialize_state(
         target_state="SET", 

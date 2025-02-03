@@ -1,7 +1,6 @@
 import Footer from "@/components/Footer/Footer";
 import { Navbar } from "@/components/Navbar/Navbar";
 import { Toaster } from "@/components/ui/sonner";
-
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
@@ -28,7 +27,7 @@ export const AppRouter = () => {
               <Route path="/learn-node" element={<LearnNodePage />} />
             </Routes>
           </div>
-          <Toaster/>
+          <Toaster />
           <Footer />
         </div>
       </Suspense>

@@ -162,7 +162,7 @@ def send_asa_simple(
 def create_account(
     algorand_client: AlgorandClient, 
 ) -> AddressAndSigner:
-    """Makae a new random account and fund it.
+    """Make a new random account and fund it.
 
     Args:
         algorand_client (AlgorandClient): Algorand client.
@@ -178,7 +178,7 @@ def create_and_fund_account(
     algorand_client: AlgorandClient, 
     amount: int=40_000_000
 ) -> AddressAndSigner:
-    """Makae a new random account and fund it.
+    """Make a new random account and fund it.
 
     Args:
         algorand_client (AlgorandClient): Algorand client.
@@ -209,11 +209,11 @@ def create_funded_account_list(
     Returns:
         List[AddressAndSigner]: Funded accounts.
     """
-    accs = []
+    acc_list = []
     for i in range(num_of_accounts):
         acc = create_and_fund_account(algorand_client)
-        accs.append(acc)
-    return accs
+        acc_list.append(acc)
+    return acc_list
 
 
 def wait_for_rounds(
@@ -267,7 +267,7 @@ def wait_for_rounds(
     return
 
 
-class LocalnerRoundProgressor(object):
+class LocalnetRoundProgressor(object):
 
     def __init__(
         self,
@@ -309,7 +309,7 @@ if __name__ == '__main__':
     algorand_client = AlgorandClient.default_local_net()
     algorand_client.set_suggested_params_timeout(0)
 
-    lrp = LocalnerRoundProgressor(
+    lrp = LocalnetRoundProgressor(
         algorand_client,
         1
     )
@@ -347,7 +347,7 @@ def translate_valad_state_to_noticeboard_util_class_action(
     Raises
     ------
     ValueError
-        Unknonw state.
+        Unknown state.
     """
     if valad_state == VALAD_STATE_READY:
         return "READY"
@@ -356,7 +356,7 @@ def translate_valad_state_to_noticeboard_util_class_action(
     elif valad_state == VALAD_STATE_NOT_LIVE:
         return "NOT_LIVE"
     else:
-        raise ValueError(f'Unknonw valad state {valad_state}')
+        raise ValueError(f'Unknown valad state {valad_state}')
 
 
 def translate_delco_state_to_noticeboard_util_class_action(
@@ -375,7 +375,7 @@ def translate_delco_state_to_noticeboard_util_class_action(
     Raises
     ------
     ValueError
-        Unknonw state.
+        Unknown state.
     """
     if delco_state == DELCO_STATE_READY:
         return "READY"
@@ -386,7 +386,7 @@ def translate_delco_state_to_noticeboard_util_class_action(
     elif delco_state == DELCO_STATE_ENDED_EXPIRED:
         return "ENDED_EXPIRED"
     else:
-        raise ValueError(f'Unknonw valad state {delco_state}')
+        raise ValueError(f'Unknown valad state {delco_state}')
 
 
 def create_asset(
@@ -437,7 +437,7 @@ def get_asset_amount_from_account_info(
     asset_list: List[dict], 
     asset_id: int
 ) -> int:
-    """Get the amount of an asset in the accounts posession.
+    """Get the amount of an asset in the accounts possession.
 
     Parameters
     ----------
@@ -454,12 +454,12 @@ def get_asset_amount_from_account_info(
     Raises
     ------
     ValueError
-        Cound not find asset with the ID.
+        Could not find asset with the ID.
     """
     for asset in asset_list:
         if asset['asset-id'] == asset_id:
             return asset['amount']
-    raise ValueError(f'Cound not find asset with ID {asset_id}.')
+    raise ValueError(f'Could not find asset with ID {asset_id}.')
 
 
 def get_min_asa_limit_from_gating_asa_list(
@@ -483,15 +483,15 @@ def get_min_asa_limit_from_gating_asa_list(
     Raises
     ------
     ValueError
-        Cound not find asset with the ID.
+        Could not find asset with the ID.
     """
     for asset in gating_asa_list:
         if asset[0] == asset_id:
             return asset[1]
-    raise ValueError(f'Cound not find asset with ID {asset_id}.')
+    raise ValueError(f'Could not find asset with ID {asset_id}.')
 
 
-### Partkey managemenet ################################################################################################
+### Partkey management ################################################################################################
 
 def does_partkey_exist(
         algorand_client, 
@@ -632,3 +632,41 @@ def wait_for_rounds_until_not_submitted(
         algorand_client=algorand_client,
         num_rounds=num_rounds
     )
+
+def get_existing_partkey_parameters(
+    algorand_client: AlgorandClient,
+    address: str,
+    vote_first_valid: int,
+    vote_last_valid: int
+) -> dict:
+    """Obtain the relevant parameters of an already generated partkey.
+
+    Parameters
+    ----------
+    algorand_client : AlgorandClient
+        Algorand client.
+    address : str
+        Address of participating entity.
+    vote_first_valid : int
+        First round when the partkeys are valid.
+    vote_last_valid : int
+        Last round when the partkeys are valid.
+
+    Returns
+    -------
+    dict
+        Partkey address and first/last valid parameters. None if did not find the partkey for <address>.
+    """
+    res = algorand_client.client.algod.algod_request(
+        'GET', 
+        '/participation'
+    )
+    if res is not None:
+        for entry in res:
+            if all([
+                entry['address'] == address,
+                entry['key']['vote-first-valid'] == vote_first_valid,
+                entry['key']['vote-last-valid'] == vote_last_valid
+            ]):
+                return entry
+    return None

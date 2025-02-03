@@ -27,9 +27,9 @@ const LearnNodePage = () => {
               continuously running - 24 hours a day, 7 days a week, 365 days a
               year.
               Check computer requirements at {" "}
-              <LinkExt 
+              <LinkExt
                 href={"https://developer.algorand.org/docs/run-a-node/setup/install/#hardware-requirements"}
-                text={"Algorand's developer docs"}
+                children={"Algorand's developer docs"}
                 className={"text-secondary"}
               />.
             </p>
@@ -41,31 +41,31 @@ const LearnNodePage = () => {
               <ul className="ml-5 list-disc space-y-1 mt-1">
                 <li>
                   Applications with a graphical user interface (GUI) such as{" "}
-                  <LinkExt 
+                  <LinkExt
                     href={"https://func.algo.xyz/"}
-                    text={"Funk's Ultimate Node Controller (FUNC)"}
+                    children={"Funk's Ultimate Node Controller (FUNC)"}
                     className={"text-secondary"}
                   />
                   {" "}or{" "}
-                  <LinkExt 
+                  <LinkExt
                     href={"https://github.com/AustP/austs-one-click-node/releases"}
-                    text={"Aust One-Click Node (A1CN)"}
+                    children={"Aust One-Click Node (A1CN)"}
                     className={"text-secondary"}
                   />
                 </li>
                 <li>
                   The command-line one-stop-shop for Algorand node running{" "}
-                  <LinkExt 
+                  <LinkExt
                     href={"https://github.com/algorandfoundation/nodekit"}
-                    text={"NodeKit"}
+                    children={"NodeKit"}
                     className={"text-secondary"}
                   />
                 </li>
                 <li>
                   A custom install with more flexibility according to{" "}
-                  <LinkExt 
+                  <LinkExt
                     href={"https://developer.algorand.org/docs/run-a-node/setup/install/"}
-                    text={"Algorand's developer guide"}
+                    children={"Algorand's developer guide"}
                     className={"text-secondary"}
                   />
                 </li>
@@ -82,22 +82,22 @@ const LearnNodePage = () => {
             <p className="text-sm">
               There are multiple ways to monitor your node.
               For example, you can enable (anonymous) node telemetry to send important events, errors, and metrics to a chosen telemetry service like Nodely or Algorand Technologies.
-              You can follow {" "}              
+              You can follow {" "}
               <LinkExt
                 href="https://nodely.io/docs/telemetry/quickstart/"
-                text="Nodely's guide"
+                children="Nodely's guide"
                 className={"text-secondary"}
               />
               {" "}or{" "}
-              <LinkExt 
+              <LinkExt
                 href={"https://developer.algorand.org/docs/run-a-node/setup/install/#configure-telemetry"}
-                text={"Algorand's developer docs"}
+                children={"Algorand's developer docs"}
                 className={"text-secondary"}
               />.
             </p>
             <p className="text-sm">
               You can also monitor directly the performance of accounts that stake on your node.
-              For this, you can use services like <LinkExt href="https://alerts.allo.info/" text="https://alerts.allo.info/" className={"text-secondary"}/>.
+              For this, you can use services like <LinkExt href="https://alerts.allo.info/" children="https://alerts.allo.info/" className={"text-secondary"}/>.
             </p>
           </div>
         </div>
@@ -112,9 +112,9 @@ const LearnNodePage = () => {
             </p>
             <p className="text-sm">
               Follow the below steps for quickly setting up the Valar Daemon or review the package information on {" "}
-              <LinkExt 
+              <LinkExt
                 href={"https://pypi.org/project/valar_daemon/"}
-                text={"PyPI"}
+                children={"PyPI"}
                 className={"text-secondary"}
               />{" "}for more details.
             </p>
@@ -122,7 +122,7 @@ const LearnNodePage = () => {
               <h3>Step 1 - Install</h3>
               <p className="text-sm">
                 Ensure that your node has Python 3.12 or greater, then install the Valar Daemon using {" "}
-                <code className={codeStyle}>pip install valar-daemon</code>.
+                <code className={codeStyle}>pip install valar_daemon</code>.
               </p>
             </div>
             <div className="flex flex-col gap-2 pb-3">
@@ -137,9 +137,9 @@ const LearnNodePage = () => {
                     Create an empty file <code className={codeStyle}>daemon.config</code> in <code className={codeStyle}>valar-daemon</code>
                   </li>
                   <li>
-                    Copy the contents of <LinkExt 
+                    Copy the contents of <LinkExt
                       href={"https://github.com/ValarStaking/valar/tree/master/projects/valar-daemon/daemon.config"}
-                      text={"https://github.com/ValarStaking/valar/tree/master/projects/valar-daemon/daemon.config"}
+                      children={"https://github.com/ValarStaking/valar/tree/master/projects/valar-daemon/daemon.config"}
                       className={"text-secondary"}
                     /> {" "}to <code className={codeStyle}>daemon.config</code>
                   </li>
@@ -150,11 +150,11 @@ const LearnNodePage = () => {
                         The ID of your ad: <code className={codeStyle}>validator_ad_id_list = [9876543210]</code>
                       </li>
                       <li>
-                        The mnemonic of your Validator Manager (hot wallet): <code className={codeStyle}>validator_manager_mnemonic = [protect security network ... able reward]</code>
+                        The mnemonic of your Validator Manager (hot wallet): <code className={codeStyle}>validator_manager_mnemonic = protect security network ... able reward</code>
                       </li>
                       <li>
                         <p>
-                          The URL and port of Algod running on your node: <code className={codeStyle}>algod_config_server = https://localhost:8080</code>.
+                          The URL and port of Algod running on your node: <code className={codeStyle}>algod_config_server = http://localhost:8080</code>.
                         </p>
                         <p>
                           You can find this in your node's files, for example, usually under <code className={codeStyle}>var/lin/algorand/algo.net</code> for Linux users.
@@ -179,12 +179,12 @@ const LearnNodePage = () => {
                 Run the Valar Daemon using <code className={codeStyle}>python -m valar_daemon.run_daemon</code>
               </p>
               <p className="text-sm">
-                This will service the Validator Ad, indicated in <code className={codeStyle}>daemon.config</code>, and all the associated Delegator Contracts. 
+                This will service the Validator Ad, indicated in <code className={codeStyle}>daemon.config</code>, and all the associated Delegator Contracts.
                 You can check in on the Valar Daemon through the real-time logs in the automatically generated <code className={codeStyle}>valar-daemon-log</code> directory.
                 View the Valar Daemon package information on {" "}
-                <LinkExt 
+                <LinkExt
                   href={"https://pypi.org/project/valar_daemon/"}
-                  text={"PyPI"}
+                  children={"PyPI"}
                   className={"text-secondary"}
                 />{" "} for more information about the logs, running the Valar Daemon in the background, and other options.
               </p>

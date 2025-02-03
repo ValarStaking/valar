@@ -13,12 +13,12 @@ const ITooltip = ({
   value,
 }: {
   className?: string;
-  value?: ReactNode;
+  value: ReactNode;
 }) => {
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={5}>
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger className="cursor-default">
           <Info className={cn("inline h-4 w-4", className)} />
         </TooltipTrigger>
         <TooltipContent className="max-w-48">{value}</TooltipContent>

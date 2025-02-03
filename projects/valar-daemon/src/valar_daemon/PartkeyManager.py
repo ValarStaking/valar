@@ -5,7 +5,7 @@ Potential danger points:
 - General algod API changes (paths, parameters, behavior).
 """
 import time
-from typing import Tuple
+from typing import Tuple, List, Dict
 
 from algokit_utils.beta.algorand_client import AlgorandClient
 from algosdk.error import AlgodHTTPError
@@ -289,7 +289,11 @@ class PartkeyBuffer(object):
                 entry['vote-last-valid'] == vote_last_valid
             ]):
                 return idx
-        raise RuntimeError(f'Cannot find partkey with the requested params for address {address} in buffer')
+        raise RuntimeError(
+            f'Cannot find partkey with ' + \
+            f'first round {entry["vote-first-valid"]} and last round {entry["vote-last-valid"]} ' + \
+            f'for address {address} in buffer.'
+        )
     
     def update_partkey_scheduled_deletion(
         self,
@@ -465,6 +469,67 @@ class PartkeyManager(object):
                     next_pending['vote-key-dilution']
                 )
                 self.busy_generating_partkey = True
+
+
+    def try_adding_generated_keys_to_buffer(
+        self,
+        partkey_params_list: List[Dict]
+    ) -> int:
+        """Check if specific partkeys have been generated and add them to the generated buffer if they are on the node.
+
+        Parameters
+        ----------
+        partkey_params_list : List[Dict]
+            Participation key parameters - address, first round, and last round.
+
+        Returns
+        -------
+        int
+            Number of keys added to the buffer.
+        """
+        # Do not proceed if the partkey manager is busy (first add the new key to the generated buffer)
+        if self.busy_generating_partkey == True:
+            return -1
+        # Initialize - disregard partkeys that are already in the buffer
+        for idx in reversed(range(len(partkey_params_list))): # Reverse iteration to avoid pop issues
+            partkey_params = partkey_params_list[idx]
+            in_buffer = self.buffer_generated.is_partkey_in_buffer(
+                partkey_params['address'],
+                partkey_params['vote-first-valid'],
+                partkey_params['vote-last-valid']
+            )
+            if in_buffer:
+                partkey_params_list.pop(idx)
+        # All relevant partkeys are in the buffer, can return
+        if len(partkey_params_list) == 0:
+            return 0
+        # Get all existing partkeys on the node
+        res = self.algorand_client.client.algod.algod_request(
+            'GET', 
+            '/participation'
+        )
+        # Look for existing partkeys that should be in the buffer and add them if found on the node
+        num_of_added_keys = 0
+        if res is not None: # If there are partkeys on the node
+            for partkey_params in partkey_params_list:  # Iterate provided partkeys
+                for entry in res: # Iterate the partkeys that are on the node
+                    if all([ # Match against all parameters and add partkey to buffer if it exists on the node
+                        entry['address'] == partkey_params['address'],
+                        entry['key']['vote-first-valid'] == partkey_params['vote-first-valid'],
+                        entry['key']['vote-last-valid'] == partkey_params['vote-last-valid']
+                    ]):
+                        self.buffer_generated.add_partkey_to_buffer(
+                            address=entry['address'],
+                            vote_first_valid=entry['key']['vote-first-valid'],
+                            vote_last_valid=entry['key']['vote-last-valid'],
+                            selection_participation_key=entry['key']['selection-participation-key'],
+                            state_proof_key=entry['key']['state-proof-key'],
+                            vote_participation_key=entry['key']['vote-participation-key'],
+                            vote_key_dilution=entry['key']['vote-key-dilution'],
+                            id=entry['id']
+                        )
+                        num_of_added_keys += 1
+        return num_of_added_keys
 
 
     def delete_scheduled_partkeys(self):
@@ -707,7 +772,9 @@ class PartkeyManager(object):
         """
         num_of_removed = 0 
         last_round = self.algorand_client.client.algod.status()['last-round'] # Get last round
-        for idx, entry in enumerate(self.buffer_generated.return_partkeys()): # Iterate over copy
+        partkeys = self.buffer_generated.return_partkeys() # Fetch partkeys
+        for idx in reversed(range(len(partkeys))): # Reverse iteration to avoid pop issues
+            entry = partkeys[idx]
             if entry['vote-last-valid'] < last_round: # Automatically deleted in partkey list
                 # self.buffer_generated.pop(idx) # Delete entry
                 self.buffer_generated.pop_partkey_from_buffer(idx)
@@ -724,45 +791,45 @@ class PartkeyManager(object):
         return num_of_removed
 
 
-    def fetch_and_add_existing_partkeys_to_buffer_generated(
-        self
-    ) -> None:
-        """Add partkeys that exist on the node to the generated buffer.
-        """
-        # Get all partkeys on the node
-        res = self.algorand_client.client.algod.algod_request(
-            'GET', 
-            '/participation'
-        )
-        # Do nothing if there are not partkeys on the node
-        if res is None:
-            return
-        # Drop the partkeys that are already in the generated buffer
-        known_partkey_mask = [False for i in range(len(res))] # Assume all new initially (none known)
-        for m, fetched_entry in enumerate(res):
-            for n, buffered_entry in enumerate(self.buffer_generated.return_partkeys()):
-                if all([
-                    fetched_entry['address'] == buffered_entry['address'],
-                    fetched_entry['key']['vote-first-valid'] == buffered_entry['vote-first-valid'],
-                    fetched_entry['key']['vote-last-valid'] == buffered_entry['vote-last-valid']
-                ]):
-                    known_partkey_mask[m] = True # Mark the ones that are in the buffer
-        if all(known_partkey_mask): # No new keys
-            return
-        # Maintain the unknonw (new) entries
-        res = [res[i] for i in range(len(known_partkey_mask)) if not known_partkey_mask[i]]
-        # Buffer the partkeys which are on the node, but not in the generated buffer
-        for m, entry in enumerate(res):
-            self.buffer_generated.add_partkey_to_buffer(
-                address=entry['address'],
-                vote_first_valid=entry['key']['vote-first-valid'],
-                vote_last_valid=entry['key']['vote-last-valid'],
-                selection_participation_key=entry['key']['selection-participation-key'],
-                state_proof_key=entry['key']['state-proof-key'],
-                vote_participation_key=entry['key']['vote-participation-key'],
-                vote_key_dilution=entry['key']['vote-key-dilution'],
-                id=entry['id']
-            )
+    # def fetch_and_add_existing_partkeys_to_buffer_generated(
+    #     self
+    # ) -> None:
+    #     """Add partkeys that exist on the node to the generated buffer.
+    #     """
+    #     # Get all partkeys on the node
+    #     res = self.algorand_client.client.algod.algod_request(
+    #         'GET', 
+    #         '/participation'
+    #     )
+    #     # Do nothing if there are not partkeys on the node
+    #     if res is None:
+    #         return
+    #     # Drop the partkeys that are already in the generated buffer
+    #     known_partkey_mask = [False for i in range(len(res))] # Assume all new initially (none known)
+    #     for m, fetched_entry in enumerate(res):
+    #         for n, buffered_entry in enumerate(self.buffer_generated.return_partkeys()):
+    #             if all([
+    #                 fetched_entry['address'] == buffered_entry['address'],
+    #                 fetched_entry['key']['vote-first-valid'] == buffered_entry['vote-first-valid'],
+    #                 fetched_entry['key']['vote-last-valid'] == buffered_entry['vote-last-valid']
+    #             ]):
+    #                 known_partkey_mask[m] = True # Mark the ones that are in the buffer
+    #     if all(known_partkey_mask): # No new keys
+    #         return
+    #     # Maintain the unknonw (new) entries
+    #     res = [res[i] for i in range(len(known_partkey_mask)) if not known_partkey_mask[i]]
+    #     # Buffer the partkeys which are on the node, but not in the generated buffer
+    #     for m, entry in enumerate(res):
+    #         self.buffer_generated.add_partkey_to_buffer(
+    #             address=entry['address'],
+    #             vote_first_valid=entry['key']['vote-first-valid'],
+    #             vote_last_valid=entry['key']['vote-last-valid'],
+    #             selection_participation_key=entry['key']['selection-participation-key'],
+    #             state_proof_key=entry['key']['state-proof-key'],
+    #             vote_participation_key=entry['key']['vote-participation-key'],
+    #             vote_key_dilution=entry['key']['vote-key-dilution'],
+    #             id=entry['id']
+    #         )
 
 
     def delete_partkey(
@@ -796,7 +863,11 @@ class PartkeyManager(object):
             vote_last_valid
         )
         if not in_gen_buf:
-            raise RuntimeError(f'Tried deleting partkey that is not in generated buffer for address {address}')
+            raise RuntimeError(
+                f'Tried deleting partkey with ' + \
+                f'first round {vote_first_valid} and last round {vote_last_valid} ' + \
+                f'for address {address} that is not in generated buffer.'
+            )
         # Check if exists at all
         generated = self.is_partkey_generated(
             address,
@@ -804,7 +875,11 @@ class PartkeyManager(object):
             vote_last_valid
         )
         if not generated:
-            raise RuntimeError(f'Tried deleting non-existent partkey for address {address}')
+            raise RuntimeError(
+                f'Tried deleting non-existent partkey with ' + \
+                f'first round {vote_first_valid} and last round {vote_last_valid} ' + \
+                f'for address {address}.'
+            )
         partkey_id = self.get_partkey_id(
             address,
             vote_first_valid,

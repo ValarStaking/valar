@@ -29,8 +29,10 @@
       "delegators",
       "dereg",
       "deregistration",
+      "galgo",
       "glspl",
       "glsposs",
+      "keyreg",
       "localnet",
       "MILLI",
       "mnemonic",
@@ -43,6 +45,7 @@
       "Reti",
       "stablecoins",
       "Struct",
+      "txns",
       "Valar",
       "vals"
     ]

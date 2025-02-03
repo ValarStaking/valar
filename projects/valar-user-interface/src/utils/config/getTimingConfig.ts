@@ -1,5 +1,6 @@
 import configLocalnet from '../../constants/timing.localnet.json'
 import configFnet from '../../constants/timing.fnet.json'
+import configMainnet from '../../constants/timing.mainnet.json'
 
 export function getTimingConfig() {
   if (!import.meta.env.VITE_ALGOD_NETWORK) {
@@ -16,6 +17,9 @@ export function getTimingConfig() {
     case "fnet":
         config = configFnet;
         break;
+    case "mainnet":
+      config = configMainnet;
+      break;
     default:
       throw("Unexpected network.");
       break;
