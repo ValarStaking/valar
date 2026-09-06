@@ -17,7 +17,7 @@ For details about each part, see the corresponding `README.md` files.
 
 A public test deployment instance of the smart contracts is available on `Algorand fnet` (ID: [`16318962`](https://lora.algokit.io/fnet/application/16318962)).
 
-### Licenses 
+### Licenses
 
 For licenses of each component see the `LICENSE` files in the corresponding folders.
 
@@ -32,5 +32,5 @@ In case of any issues or comments, you can use reach out through any of the foll
 - Discord: https://discord.com/invite/vSKNznSywt
 - Telegram: https://t.me/ValarStaking
 
-Copyright (C) 2025 Valar Solutions GmbH
+Copyright (C) 2026 Valar Solutions GmbH
 
